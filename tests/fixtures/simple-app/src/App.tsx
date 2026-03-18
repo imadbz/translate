@@ -2,6 +2,11 @@ import { useLocale } from '@translate/react';
 import { CheckoutPage } from './CheckoutPage';
 import { Profile } from './Profile';
 import { Nav } from './Nav';
+import { CssClasses } from './CssClasses';
+import { ConsoleLog } from './ConsoleLog';
+import { UrlsAndPaths } from './UrlsAndPaths';
+import { Plurals } from './Plurals';
+import { TypedPage } from './TypedComponent';
 
 export function App() {
   const { locale, setLocale, availableLocales } = useLocale();
@@ -27,6 +32,13 @@ export function App() {
       <Nav isLoggedIn={true} />
       <Profile name="Alice" itemCount={3} />
       <CheckoutPage />
+      <hr />
+      <h2>Edge Cases</h2>
+      <CssClasses />
+      <ConsoleLog />
+      <UrlsAndPaths />
+      <Plurals count={5} />
+      <TypedPage />
     </div>
   );
 }

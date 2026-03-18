@@ -1,6 +1,7 @@
 import { extractStrings } from './extract/extractor.js';
 import { emitTCalls } from './transform/emitter.js';
 import { KeyRegistry } from './transform/keygen.js';
+import { translateStrings } from './translate/llm.js';
 import type { ExtractedString } from './extract/visitors.js';
 
 export interface FileInput {
@@ -15,7 +16,6 @@ export interface FileOutput {
 
 export interface JobResult {
   files: FileOutput[];
-  /** All locale translations keyed by locale: { en: {...}, fr: {...} } */
   translations: Record<string, Record<string, string>>;
 }
 
@@ -27,15 +27,15 @@ export interface Job {
   error?: string;
 }
 
-/**
- * Process source files: extract strings, emit t() calls, return all locale translations.
- * @param files - source files to process
- * @param localeTranslations - existing translations per locale (from project config/db)
- */
-export function processFiles(
+export interface ProcessOptions {
+  model: Parameters<typeof translateStrings>[0]['model'];
+  locales: string[];
+}
+
+export async function processFiles(
   files: FileInput[],
-  localeTranslations?: Record<string, Record<string, string>>,
-): JobResult {
+  options?: ProcessOptions,
+): Promise<JobResult> {
   const keyRegistry = new KeyRegistry();
   const keyGen = (filePath: string, value: string) => keyRegistry.register(filePath, value);
 
@@ -62,11 +62,28 @@ export function processFiles(
     outputFiles.push({ path: file.path, content: transformed });
   }
 
-  // Build the full locale map: en is always included, plus any configured locales
+  // Phase C: Translate to all configured locales via LLM
   const allTranslations: Record<string, Record<string, string>> = {
     en: sourceTranslations,
-    ...localeTranslations,
   };
+
+  if (options && Object.keys(sourceTranslations).length > 0) {
+    const translationPromises = options.locales
+      .filter(l => l !== 'en')
+      .map(async (locale) => {
+        const translated = await translateStrings({
+          model: options.model,
+          sourceStrings: sourceTranslations,
+          targetLocale: locale,
+        });
+        return [locale, translated] as const;
+      });
+
+    const results = await Promise.all(translationPromises);
+    for (const [locale, translated] of results) {
+      allTranslations[locale] = translated;
+    }
+  }
 
   return {
     files: outputFiles,

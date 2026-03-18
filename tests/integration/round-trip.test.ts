@@ -47,11 +47,11 @@ describe('round-trip: plugin → server → plugin', () => {
   });
 
   it('returns additional locales when project has them configured', async () => {
-    // Seed French for a test project
-    await fetch(`${serverUrl}/projects/test-project/locales/fr`, {
+    // Configure French locale for a test project
+    await fetch(`${serverUrl}/projects/test-project/locales`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 'checkout_page.pay_now': 'Payer maintenant' }),
+      body: JSON.stringify({ locales: ['en', 'fr'] }),
     });
 
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
@@ -60,7 +60,8 @@ describe('round-trip: plugin → server → plugin', () => {
 
     expect(result.translations).toHaveProperty('en');
     expect(result.translations).toHaveProperty('fr');
-    expect(result.translations!.fr['checkout_page.pay_now']).toBe('Payer maintenant');
+    // Mock model returns source strings — just verify the key exists
+    expect(result.translations!.fr).toHaveProperty('checkout_page.pay_now');
   });
 
   it('extracts strings from all fixture files', async () => {

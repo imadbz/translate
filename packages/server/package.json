@@ -9,11 +9,15 @@
     "./*": "./src/*"
   },
   "dependencies": {
-    "hono": "^4.7.10",
-    "@hono/node-server": "^1.14.1",
+    "@ai-sdk/anthropic": "^3.0.58",
+    "@ai-sdk/openai": "^3.0.41",
+    "@babel/generator": "^7.27.1",
     "@babel/parser": "^7.27.2",
     "@babel/traverse": "^7.27.1",
-    "@babel/generator": "^7.27.1",
-    "@babel/types": "^7.27.1"
+    "@babel/types": "^7.27.1",
+    "@hono/node-server": "^1.14.1",
+    "ai": "^6.0.116",
+    "hono": "^4.7.10",
+    "zod": "^4.3.6"
   }
 }

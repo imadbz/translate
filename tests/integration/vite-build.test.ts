@@ -15,14 +15,11 @@ describe('Vite build integration', () => {
     const info = await startTestServer();
     serverUrl = info.url;
 
-    // Seed French for integration tests
-    await fetch(`${info.url}/projects/test-app/locales/fr`, {
+    // Configure French locale for integration tests
+    await fetch(`${info.url}/projects/test-app/locales`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        'checkout_page.checkout': 'Paiement',
-        'checkout_page.pay_now': 'Payer maintenant',
-      }),
+      body: JSON.stringify({ locales: ['en', 'fr'] }),
     });
   });
 
@@ -55,7 +52,7 @@ describe('Vite build integration', () => {
     const frJsonPath = resolve(translationsDir, 'fr.json');
     expect(existsSync(frJsonPath)).toBe(true);
     const frJson = JSON.parse(readFileSync(frJsonPath, 'utf-8'));
-    expect(frJson).toHaveProperty('checkout_page.pay_now', 'Payer maintenant');
+    expect(frJson).toHaveProperty('checkout_page.pay_now');
   });
 
   it('build output contains t() calls (not raw strings)', async () => {

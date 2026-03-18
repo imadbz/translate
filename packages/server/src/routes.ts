@@ -1,32 +1,32 @@
 import { Hono } from 'hono';
 import { randomUUID } from 'crypto';
-import { processFiles, type Job, type FileInput } from './processor.js';
+import { processFiles, type Job, type FileInput, type ProcessOptions } from './processor.js';
 
-// In-memory project locale store (in production this would be a database)
-const projectLocales = new Map<string, Record<string, Record<string, string>>>();
+// In-memory project config (in production this would be a database)
+const projectLocales = new Map<string, string[]>();
 
-export function createRoutes() {
+export interface ServerConfig {
+  /** AI model to use for translations */
+  model: ProcessOptions['model'];
+}
+
+export function createRoutes(config: ServerConfig) {
   const app = new Hono();
   const jobs = new Map<string, Job>();
 
-  // Set translations for a project's locale
-  app.put('/projects/:projectId/locales/:locale', async (c) => {
+  // Configure locales for a project
+  app.put('/projects/:projectId/locales', async (c) => {
     const projectId = c.req.param('projectId');
-    const locale = c.req.param('locale');
-    const translations = await c.req.json<Record<string, string>>();
-
-    if (!projectLocales.has(projectId)) {
-      projectLocales.set(projectId, {});
-    }
-    projectLocales.get(projectId)![locale] = translations;
-    return c.json({ ok: true });
+    const body = await c.req.json<{ locales: string[] }>();
+    projectLocales.set(projectId, body.locales);
+    return c.json({ ok: true, locales: body.locales });
   });
 
-  // Get all locales for a project
+  // Get locales for a project
   app.get('/projects/:projectId/locales', (c) => {
     const projectId = c.req.param('projectId');
-    const locales = projectLocales.get(projectId) ?? {};
-    return c.json(locales);
+    const locales = projectLocales.get(projectId) ?? ['en'];
+    return c.json({ locales });
   });
 
   app.post('/upload', async (c) => {
@@ -47,22 +47,25 @@ export function createRoutes() {
     };
     jobs.set(jobId, job);
 
-    // Look up locale translations for this project
-    const localeTranslations = body.projectId
-      ? projectLocales.get(body.projectId)
-      : undefined;
+    // Look up locales for this project
+    const locales = body.projectId
+      ? (projectLocales.get(body.projectId) ?? ['en'])
+      : ['en'];
 
     // Process asynchronously
-    setImmediate(() => {
+    (async () => {
       try {
-        const result = processFiles(body.files, localeTranslations);
+        const result = await processFiles(body.files, {
+          model: config.model,
+          locales,
+        });
         job.result = result;
         job.status = 'complete';
       } catch (err) {
         job.status = 'error';
         job.error = err instanceof Error ? err.message : String(err);
       }
-    });
+    })();
 
     return c.json({ jobId, status: 'processing' }, 202);
   });

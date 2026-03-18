@@ -17,8 +17,8 @@ describe('processFiles', () => {
     `,
   };
 
-  it('extracts translations into en locale', () => {
-    const result = processFiles([checkoutFile]);
+  it('extracts translations into en locale', async () => {
+    const result = await processFiles([checkoutFile]);
     expect(result.translations).toHaveProperty('en');
     const en = result.translations.en;
     expect(Object.values(en)).toContain('Checkout');
@@ -26,28 +26,20 @@ describe('processFiles', () => {
     expect(Object.values(en)).toContain('Review your order before paying');
   });
 
-  it('emits t() calls in transformed files', () => {
-    const result = processFiles([checkoutFile]);
+  it('emits t() calls in transformed files', async () => {
+    const result = await processFiles([checkoutFile]);
     expect(result.files).toHaveLength(1);
     expect(result.files[0].content).toContain('__t(');
     expect(result.files[0].content).toContain('@translate/react');
   });
 
-  it('includes additional locales when provided', () => {
-    const fr = { 'checkout_page.checkout': 'Paiement' };
-    const result = processFiles([checkoutFile], { fr });
-    expect(result.translations).toHaveProperty('en');
-    expect(result.translations).toHaveProperty('fr');
-    expect(result.translations.fr['checkout_page.checkout']).toBe('Paiement');
-  });
-
-  it('preserves non-translatable content in transformed files', () => {
-    const result = processFiles([checkoutFile]);
+  it('preserves non-translatable content in transformed files', async () => {
+    const result = await processFiles([checkoutFile]);
     expect(result.files[0].content).toContain('btn-primary');
     expect(result.files[0].content).toContain('submit');
   });
 
-  it('processes multiple files independently', () => {
+  it('processes multiple files independently', async () => {
     const navFile = {
       path: 'src/Nav.tsx',
       content: `
@@ -57,13 +49,13 @@ describe('processFiles', () => {
       `,
     };
 
-    const result = processFiles([checkoutFile, navFile]);
+    const result = await processFiles([checkoutFile, navFile]);
     expect(result.files).toHaveLength(2);
     expect(Object.values(result.translations.en)).toContain('Home');
     expect(Object.values(result.translations.en)).toContain('Pay now');
   });
 
-  it('handles files with no translatable strings', () => {
+  it('handles files with no translatable strings', async () => {
     const emptyFile = {
       path: 'src/Empty.tsx',
       content: `
@@ -73,14 +65,14 @@ describe('processFiles', () => {
       `,
     };
 
-    const result = processFiles([emptyFile]);
+    const result = await processFiles([emptyFile]);
     expect(result.files).toHaveLength(1);
     expect(Object.keys(result.translations.en)).toHaveLength(0);
     expect(result.files[0].content).not.toContain('__t(');
   });
 
-  it('injects useTranslation hook into components', () => {
-    const result = processFiles([checkoutFile]);
+  it('injects useTranslation hook into components', async () => {
+    const result = await processFiles([checkoutFile]);
     expect(result.files[0].content).toContain('__useT()');
   });
 });
