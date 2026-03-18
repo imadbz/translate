@@ -6,6 +6,8 @@ export interface TranslateContextValue {
   availableLocales: string[];
   translations: Record<string, Record<string, string>>;
   t: (key: string, params?: Record<string, unknown>) => string;
+  dir: 'ltr' | 'rtl';
+  isRTL: boolean;
 }
 
 export const TranslateContext = createContext<TranslateContextValue | null>(null);
