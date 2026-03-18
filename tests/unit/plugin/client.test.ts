@@ -1,0 +1,111 @@
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { upload, pollJob } from '@translate/vite-plugin/client';
+import { startTestServer, stopTestServer, getServerUrl } from '../../helpers/test-server';
+
+describe('client', () => {
+  let serverUrl: string;
+
+  beforeAll(async () => {
+    const info = await startTestServer();
+    serverUrl = info.url;
+  });
+
+  afterAll(async () => {
+    await stopTestServer();
+  });
+
+  describe('upload', () => {
+    it('uploads files and returns a jobId', async () => {
+      const result = await upload(serverUrl, {
+        locale: 'en',
+        files: [
+          { path: 'src/App.tsx', content: '<h1>Hello</h1>' },
+        ],
+      });
+      expect(result.jobId).toBeDefined();
+      expect(typeof result.jobId).toBe('string');
+      expect(result.status).toBe('processing');
+    });
+
+    it('sends correct request body', async () => {
+      const files = [
+        { path: 'src/A.tsx', content: '<p>One</p>' },
+        { path: 'src/B.tsx', content: '<p>Two</p>' },
+      ];
+      const result = await upload(serverUrl, { locale: 'fr', files });
+      expect(result.jobId).toBeDefined();
+    });
+
+    it('fails with 400 for empty files array', async () => {
+      await expect(
+        upload(serverUrl, { locale: 'en', files: [] })
+      ).rejects.toThrow(/400/);
+    });
+  });
+
+  describe('pollJob', () => {
+    it('polls until job is complete', async () => {
+      const { jobId } = await upload(serverUrl, {
+        locale: 'en',
+        files: [{ path: 'src/App.tsx', content: '<h1>Hello</h1>' }],
+      });
+
+      const result = await pollJob(serverUrl, jobId, {
+        interval: 50,
+        timeout: 5000,
+      });
+
+      expect(result.status).toBe('complete');
+      expect(result.files).toBeDefined();
+      expect(result.translations).toBeDefined();
+    });
+
+    it('returns transformed files', async () => {
+      const { jobId } = await upload(serverUrl, {
+        locale: 'en',
+        files: [
+          { path: 'src/CheckoutPage.tsx', content: '<button>Pay now</button>' },
+        ],
+      });
+
+      const result = await pollJob(serverUrl, jobId, {
+        interval: 50,
+        timeout: 5000,
+      });
+
+      expect(result.files).toHaveLength(1);
+      expect(result.files![0].path).toBe('src/CheckoutPage.tsx');
+      expect(result.translations).toBeDefined();
+      expect(Object.values(result.translations!)).toContain('Pay now');
+    });
+
+    it('throws on timeout', async () => {
+      await expect(
+        pollJob(serverUrl, 'nonexistent-job-id', {
+          interval: 10,
+          timeout: 50,
+        })
+      ).rejects.toThrow();
+    });
+
+    it('returns translations for French locale with provided translations', async () => {
+      const { jobId } = await upload(serverUrl, {
+        locale: 'fr',
+        files: [
+          { path: 'src/App.tsx', content: '<h1>Hello World</h1>' },
+        ],
+        translations: {
+          'app.hello_world': 'Bonjour le monde',
+        },
+      });
+
+      const result = await pollJob(serverUrl, jobId, {
+        interval: 50,
+        timeout: 5000,
+      });
+
+      expect(result.status).toBe('complete');
+      expect(result.files![0].content).toContain('Bonjour le monde');
+    });
+  });
+});

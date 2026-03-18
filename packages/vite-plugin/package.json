@@ -1,0 +1,13 @@
+{
+  "name": "@translate/vite-plugin",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "fast-glob": "^3.3.3"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
+  }
+}

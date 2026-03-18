@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "declaration": true,
+    "paths": {
+      "@translate/vite-plugin": ["./packages/vite-plugin/src"],
+      "@translate/server": ["./packages/server/src"]
+    }
+  },
+  "include": ["packages/*/src/**/*", "tests/**/*"]
+}
