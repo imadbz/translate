@@ -1,8 +1,6 @@
 export interface PluginOptions {
   /** Server URL (required) */
   serverUrl: string;
-  /** Target locale for the build (default: "en") */
-  locale?: string;
   /** Directory to write translation JSON files (default: "translations") */
   translationsDir?: string;
   /** File globs to include (default: ["src/**\/*.{tsx,jsx}"]) */
@@ -17,7 +15,6 @@ export interface PluginOptions {
 
 export interface ResolvedOptions {
   serverUrl: string;
-  locale: string;
   translationsDir: string;
   include: string[];
   exclude: string[];
@@ -28,7 +25,6 @@ export interface ResolvedOptions {
 export function resolveOptions(options: PluginOptions): ResolvedOptions {
   return {
     serverUrl: options.serverUrl.replace(/\/$/, ''),
-    locale: options.locale ?? 'en',
     translationsDir: options.translationsDir ?? 'translations',
     include: options.include ?? ['src/**/*.{tsx,jsx}'],
     exclude: options.exclude ?? ['**/*.test.*', '**/*.spec.*'],

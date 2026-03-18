@@ -18,31 +18,24 @@ describe('processFiles', () => {
   };
 
   it('extracts translations from files', () => {
-    const result = processFiles([checkoutFile], 'en');
+    const result = processFiles([checkoutFile]);
     expect(Object.keys(result.translations).length).toBeGreaterThan(0);
     expect(Object.values(result.translations)).toContain('Checkout');
     expect(Object.values(result.translations)).toContain('Pay now');
     expect(Object.values(result.translations)).toContain('Review your order before paying');
   });
 
-  it('returns files unchanged for English locale (identity)', () => {
-    const result = processFiles([checkoutFile], 'en');
+  it('emits t() calls in transformed files', () => {
+    const result = processFiles([checkoutFile]);
     expect(result.files).toHaveLength(1);
-    expect(result.files[0].content).toBe(checkoutFile.content);
+    expect(result.files[0].content).toContain('__t(');
+    expect(result.files[0].content).toContain('@translate/react');
   });
 
-  it('replaces strings for non-English locale', () => {
-    const frTranslations = {
-      'checkout_page.checkout': 'Paiement',
-      'checkout_page.review_your_order_before_paying': 'Vérifiez votre commande avant de payer',
-      'checkout_page.pay_now': 'Payer maintenant',
-    };
-
-    const result = processFiles([checkoutFile], 'fr', frTranslations);
-    expect(result.files).toHaveLength(1);
-    expect(result.files[0].content).toContain('Paiement');
-    expect(result.files[0].content).toContain('Payer maintenant');
-    expect(result.files[0].content).not.toContain('>Checkout<');
+  it('preserves non-translatable content in transformed files', () => {
+    const result = processFiles([checkoutFile]);
+    expect(result.files[0].content).toContain('btn-primary');
+    expect(result.files[0].content).toContain('submit');
   });
 
   it('processes multiple files independently', () => {
@@ -55,21 +48,10 @@ describe('processFiles', () => {
       `,
     };
 
-    const result = processFiles([checkoutFile, navFile], 'en');
+    const result = processFiles([checkoutFile, navFile]);
     expect(result.files).toHaveLength(2);
     expect(Object.values(result.translations)).toContain('Home');
     expect(Object.values(result.translations)).toContain('Pay now');
-  });
-
-  it('preserves non-translatable content', () => {
-    const result = processFiles([checkoutFile], 'fr', {
-      'checkout_page.checkout': 'Paiement',
-      'checkout_page.pay_now': 'Payer maintenant',
-      'checkout_page.review_your_order_before_paying': 'Vérifiez',
-    });
-    // className should be preserved
-    expect(result.files[0].content).toContain('btn-primary');
-    expect(result.files[0].content).toContain('submit');
   });
 
   it('handles files with no translatable strings', () => {
@@ -82,8 +64,15 @@ describe('processFiles', () => {
       `,
     };
 
-    const result = processFiles([emptyFile], 'en');
+    const result = processFiles([emptyFile]);
     expect(result.files).toHaveLength(1);
     expect(Object.keys(result.translations)).toHaveLength(0);
+    // No t() calls injected
+    expect(result.files[0].content).not.toContain('__t(');
+  });
+
+  it('injects useTranslation hook into components', () => {
+    const result = processFiles([checkoutFile]);
+    expect(result.files[0].content).toContain('__useT()');
   });
 });

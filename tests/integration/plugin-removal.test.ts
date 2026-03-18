@@ -12,6 +12,7 @@ describe('plugin removal', () => {
 
     // Build WITHOUT the translate plugin — just React
     await build({
+      configFile: false,
       root: fixtureRoot,
       plugins: [react()],
       build: {

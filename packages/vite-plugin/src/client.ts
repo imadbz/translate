@@ -1,8 +1,6 @@
 export interface UploadRequest {
   projectId?: string;
-  locale: string;
   files: { path: string; content: string }[];
-  translations?: Record<string, string>;
 }
 
 export interface UploadResponse {

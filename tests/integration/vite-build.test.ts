@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { build } from 'vite';
 import { resolve } from 'path';
-import { readFileSync, existsSync, readdirSync, mkdirSync, writeFileSync, rmSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, rmSync } from 'fs';
 import { startTestServer, stopTestServer } from '../helpers/test-server';
 import translatePlugin from '@translate/vite-plugin';
 import react from '@vitejs/plugin-react';
@@ -18,37 +18,24 @@ describe('Vite build integration', () => {
 
   afterAll(async () => {
     await stopTestServer();
-    // Clean up generated translations dir
     rmSync(translationsDir, { recursive: true, force: true });
   });
 
-  it('builds with English locale and writes en.json', async () => {
+  it('builds and writes en.json with extracted strings', async () => {
     const outDir = resolve(fixtureRoot, 'dist-en');
 
     await build({
+      configFile: false,
       root: fixtureRoot,
       plugins: [
-        translatePlugin({ serverUrl, locale: 'en' }),
+        translatePlugin({ serverUrl }),
         react(),
       ],
       build: { outDir, write: true, minify: false },
       logLevel: 'silent',
     });
 
-    // Built JS should contain the original English strings
-    const assetsDir = resolve(outDir, 'assets');
-    expect(existsSync(assetsDir)).toBe(true);
-
-    const jsFiles = readdirSync(assetsDir).filter(f => f.endsWith('.js'));
-    const bundleContent = jsFiles
-      .map(f => readFileSync(resolve(assetsDir, f), 'utf-8'))
-      .join('\n');
-
-    expect(bundleContent).toContain('Checkout');
-    expect(bundleContent).toContain('Pay now');
-    expect(bundleContent).not.toMatch(/\bt\(['"][a-z_]+\.[a-z_]+['"]\)/);
-
-    // en.json should have been written to disk
+    // en.json should have been written
     const enJsonPath = resolve(translationsDir, 'en.json');
     expect(existsSync(enJsonPath)).toBe(true);
 
@@ -57,21 +44,14 @@ describe('Vite build integration', () => {
     expect(enJson).toHaveProperty('checkout_page.checkout', 'Checkout');
   });
 
-  it('builds with French locale using translations from disk', async () => {
-    const outDir = resolve(fixtureRoot, 'dist-fr');
-
-    // Write fr.json to disk (simulating what the GitHub Action would do)
-    mkdirSync(translationsDir, { recursive: true });
-    writeFileSync(resolve(translationsDir, 'fr.json'), JSON.stringify({
-      'checkout_page.checkout': 'Paiement',
-      'checkout_page.pay_now': 'Payer maintenant',
-      'checkout_page.review_your_order_before_paying': 'Vérifiez votre commande',
-    }));
+  it('build output contains t() calls (not raw strings)', async () => {
+    const outDir = resolve(fixtureRoot, 'dist-tcalls');
 
     await build({
+      configFile: false,
       root: fixtureRoot,
       plugins: [
-        translatePlugin({ serverUrl, locale: 'fr' }),
+        translatePlugin({ serverUrl }),
         react(),
       ],
       build: { outDir, write: true, minify: false },
@@ -79,13 +59,16 @@ describe('Vite build integration', () => {
     });
 
     const assetsDir = resolve(outDir, 'assets');
+    expect(existsSync(assetsDir)).toBe(true);
+
     const jsFiles = readdirSync(assetsDir).filter(f => f.endsWith('.js'));
     const bundleContent = jsFiles
       .map(f => readFileSync(resolve(assetsDir, f), 'utf-8'))
       .join('\n');
 
-    expect(bundleContent).toContain('Paiement');
-    expect(bundleContent).toContain('Payer maintenant');
+    // Should contain translation keys (from t() calls)
+    expect(bundleContent).toContain('checkout_page.pay_now');
+    expect(bundleContent).toContain('checkout_page.checkout');
   });
 
   it('source files are unchanged after build', async () => {
@@ -97,9 +80,10 @@ describe('Vite build integration', () => {
     }));
 
     await build({
+      configFile: false,
       root: fixtureRoot,
       plugins: [
-        translatePlugin({ serverUrl, locale: 'en' }),
+        translatePlugin({ serverUrl }),
         react(),
       ],
       build: {

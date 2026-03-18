@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@translate/vite-plugin': new URL('./packages/vite-plugin/src', import.meta.url).pathname,
       '@translate/server': new URL('./packages/server/src', import.meta.url).pathname,
+      '@translate/react': new URL('./packages/react/src', import.meta.url).pathname,
     },
   },
 });

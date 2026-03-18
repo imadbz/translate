@@ -5,6 +5,7 @@ export { createRoutes } from './routes.js';
 export { processFiles } from './processor.js';
 export { extractStrings } from './extract/extractor.js';
 export { inlineTranslations } from './transform/inliner.js';
+export { emitTCalls } from './transform/emitter.js';
 export { KeyRegistry, generateKey } from './transform/keygen.js';
 
 export function startServer(port = 3100) {

@@ -17,7 +17,6 @@ describe('client', () => {
   describe('upload', () => {
     it('uploads files and returns a jobId', async () => {
       const result = await upload(serverUrl, {
-        locale: 'en',
         files: [
           { path: 'src/App.tsx', content: '<h1>Hello</h1>' },
         ],
@@ -32,13 +31,13 @@ describe('client', () => {
         { path: 'src/A.tsx', content: '<p>One</p>' },
         { path: 'src/B.tsx', content: '<p>Two</p>' },
       ];
-      const result = await upload(serverUrl, { locale: 'fr', files });
+      const result = await upload(serverUrl, { files });
       expect(result.jobId).toBeDefined();
     });
 
     it('fails with 400 for empty files array', async () => {
       await expect(
-        upload(serverUrl, { locale: 'en', files: [] })
+        upload(serverUrl, { files: [] })
       ).rejects.toThrow(/400/);
     });
   });
@@ -46,7 +45,6 @@ describe('client', () => {
   describe('pollJob', () => {
     it('polls until job is complete', async () => {
       const { jobId } = await upload(serverUrl, {
-        locale: 'en',
         files: [{ path: 'src/App.tsx', content: '<h1>Hello</h1>' }],
       });
 
@@ -60,9 +58,8 @@ describe('client', () => {
       expect(result.translations).toBeDefined();
     });
 
-    it('returns transformed files', async () => {
+    it('returns transformed files with t() calls', async () => {
       const { jobId } = await upload(serverUrl, {
-        locale: 'en',
         files: [
           { path: 'src/CheckoutPage.tsx', content: '<button>Pay now</button>' },
         ],
@@ -75,6 +72,7 @@ describe('client', () => {
 
       expect(result.files).toHaveLength(1);
       expect(result.files![0].path).toBe('src/CheckoutPage.tsx');
+      expect(result.files![0].content).toContain('__t(');
       expect(result.translations).toBeDefined();
       expect(Object.values(result.translations!)).toContain('Pay now');
     });
@@ -86,26 +84,6 @@ describe('client', () => {
           timeout: 50,
         })
       ).rejects.toThrow();
-    });
-
-    it('returns translations for French locale with provided translations', async () => {
-      const { jobId } = await upload(serverUrl, {
-        locale: 'fr',
-        files: [
-          { path: 'src/App.tsx', content: '<h1>Hello World</h1>' },
-        ],
-        translations: {
-          'app.hello_world': 'Bonjour le monde',
-        },
-      });
-
-      const result = await pollJob(serverUrl, jobId, {
-        interval: 50,
-        timeout: 5000,
-      });
-
-      expect(result.status).toBe('complete');
-      expect(result.files![0].content).toContain('Bonjour le monde');
     });
   });
 });

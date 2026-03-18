@@ -4,7 +4,7 @@ import { upload, pollJob } from '@translate/vite-plugin/client';
 import { collectFiles } from '@translate/vite-plugin/collector';
 import { resolve } from 'path';
 
-describe('identity transform', () => {
+describe('extraction consistency', () => {
   let serverUrl: string;
   const fixtureRoot = resolve(__dirname, '../fixtures/simple-app');
 
@@ -17,25 +17,23 @@ describe('identity transform', () => {
     await stopTestServer();
   });
 
-  it('English locale returns files with identical content', async () => {
+  it('same files produce same translations on repeated uploads', async () => {
     const files = await collectFiles(fixtureRoot, ['src/**/*.tsx'], []);
 
-    const { jobId } = await upload(serverUrl, { locale: 'en', files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const { jobId: id1 } = await upload(serverUrl, { files });
+    const result1 = await pollJob(serverUrl, id1, { interval: 50, timeout: 10000 });
 
-    expect(result.files).toHaveLength(files.length);
+    const { jobId: id2 } = await upload(serverUrl, { files });
+    const result2 = await pollJob(serverUrl, id2, { interval: 50, timeout: 10000 });
 
-    for (let i = 0; i < files.length; i++) {
-      const original = files.find(f => f.path === result.files![i].path);
-      expect(original).toBeDefined();
-      expect(result.files![i].content).toBe(original!.content);
-    }
+    // Same keys and values both times (deterministic)
+    expect(result1.translations).toEqual(result2.translations);
   });
 
-  it('English locale still extracts translations', async () => {
+  it('extracts all translatable strings', async () => {
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
 
-    const { jobId } = await upload(serverUrl, { locale: 'en', files });
+    const { jobId } = await upload(serverUrl, { files });
     const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
     expect(Object.keys(result.translations!).length).toBeGreaterThan(0);

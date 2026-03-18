@@ -13,7 +13,9 @@
       "@translate/vite-plugin": ["./packages/vite-plugin/src"],
       "@translate/vite-plugin/*": ["./packages/vite-plugin/src/*"],
       "@translate/server": ["./packages/server/src"],
-      "@translate/server/*": ["./packages/server/src/*"]
+      "@translate/server/*": ["./packages/server/src/*"],
+      "@translate/react": ["./packages/react/src"],
+      "@translate/react/*": ["./packages/react/src/*"]
     }
   },
   "include": ["packages/*/src/**/*", "tests/**/*"]

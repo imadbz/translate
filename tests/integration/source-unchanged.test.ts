@@ -22,17 +22,14 @@ describe('source files unchanged', () => {
   it('source file contents are identical before and after server processing', async () => {
     const files = await collectFiles(fixtureRoot, ['src/**/*.tsx'], []);
 
-    // Hash all source files before
     const hashesBefore = files.map(f => ({
       path: f.path,
       hash: createHash('sha256').update(f.content).digest('hex'),
     }));
 
-    // Process through server
-    const { jobId } = await upload(serverUrl, { locale: 'fr', files, translations: {} });
+    const { jobId } = await upload(serverUrl, { files });
     await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
-    // Hash all source files after (read from disk again)
     const hashesAfter = files.map(f => ({
       path: f.path,
       hash: createHash('sha256')
@@ -40,7 +37,6 @@ describe('source files unchanged', () => {
         .digest('hex'),
     }));
 
-    // Every file hash should match
     for (let i = 0; i < hashesBefore.length; i++) {
       expect(hashesAfter[i].hash).toBe(hashesBefore[i].hash);
     }

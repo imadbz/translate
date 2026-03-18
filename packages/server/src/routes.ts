@@ -9,24 +9,18 @@ export function createRoutes() {
   app.post('/upload', async (c) => {
     const body = await c.req.json<{
       projectId?: string;
-      locale: string;
       files: FileInput[];
-      translations?: Record<string, string>;
     }>();
 
     if (!body.files || !Array.isArray(body.files) || body.files.length === 0) {
       return c.json({ error: 'files array is required and must not be empty' }, 400);
     }
 
-    if (!body.locale) {
-      return c.json({ error: 'locale is required' }, 400);
-    }
-
     const jobId = randomUUID();
     const job: Job = {
       id: jobId,
       status: 'processing',
-      locale: body.locale,
+      locale: 'en',
       files: body.files,
     };
     jobs.set(jobId, job);
@@ -34,7 +28,7 @@ export function createRoutes() {
     // Process asynchronously
     setImmediate(() => {
       try {
-        const result = processFiles(body.files, body.locale, body.translations);
+        const result = processFiles(body.files);
         job.result = result;
         job.status = 'complete';
       } catch (err) {
