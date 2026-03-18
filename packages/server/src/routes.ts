@@ -2,9 +2,32 @@ import { Hono } from 'hono';
 import { randomUUID } from 'crypto';
 import { processFiles, type Job, type FileInput } from './processor.js';
 
+// In-memory project locale store (in production this would be a database)
+const projectLocales = new Map<string, Record<string, Record<string, string>>>();
+
 export function createRoutes() {
   const app = new Hono();
   const jobs = new Map<string, Job>();
+
+  // Set translations for a project's locale
+  app.put('/projects/:projectId/locales/:locale', async (c) => {
+    const projectId = c.req.param('projectId');
+    const locale = c.req.param('locale');
+    const translations = await c.req.json<Record<string, string>>();
+
+    if (!projectLocales.has(projectId)) {
+      projectLocales.set(projectId, {});
+    }
+    projectLocales.get(projectId)![locale] = translations;
+    return c.json({ ok: true });
+  });
+
+  // Get all locales for a project
+  app.get('/projects/:projectId/locales', (c) => {
+    const projectId = c.req.param('projectId');
+    const locales = projectLocales.get(projectId) ?? {};
+    return c.json(locales);
+  });
 
   app.post('/upload', async (c) => {
     const body = await c.req.json<{
@@ -20,15 +43,19 @@ export function createRoutes() {
     const job: Job = {
       id: jobId,
       status: 'processing',
-      locale: 'en',
       files: body.files,
     };
     jobs.set(jobId, job);
 
+    // Look up locale translations for this project
+    const localeTranslations = body.projectId
+      ? projectLocales.get(body.projectId)
+      : undefined;
+
     // Process asynchronously
     setImmediate(() => {
       try {
-        const result = processFiles(body.files);
+        const result = processFiles(body.files, localeTranslations);
         job.result = result;
         job.status = 'complete';
       } catch (err) {

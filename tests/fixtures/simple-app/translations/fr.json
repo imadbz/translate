@@ -1,0 +1,16 @@
+{
+  "app.language": "Langue :",
+  "checkout_page.checkout": "Paiement",
+  "checkout_page.pay_now": "Payer maintenant",
+  "checkout_page.review_your_order_before_paying": "Vérifiez votre commande avant de payer",
+  "nav.account": "Compte",
+  "nav.home": "Accueil",
+  "nav.main_navigation": "Navigation principale",
+  "nav.sign_in": "Se connecter",
+  "profile.get_help": "Obtenir de l'aide",
+  "profile.hello_name": "Bonjour {name}",
+  "profile.help": "Aide",
+  "profile.search_orders": "Rechercher des commandes",
+  "profile.you_have_itemcount_items_in_your": "Vous avez {itemCount} articles dans votre panier",
+  "profile.your_cart_is_empty": "Votre panier est vide"
+}

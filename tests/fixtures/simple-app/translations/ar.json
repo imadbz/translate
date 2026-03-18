@@ -1,0 +1,16 @@
+{
+  "app.language": "اللغة:",
+  "checkout_page.checkout": "الدفع",
+  "checkout_page.pay_now": "ادفع الآن",
+  "checkout_page.review_your_order_before_paying": "راجع طلبك قبل الدفع",
+  "nav.account": "الحساب",
+  "nav.home": "الرئيسية",
+  "nav.main_navigation": "التنقل الرئيسي",
+  "nav.sign_in": "تسجيل الدخول",
+  "profile.get_help": "احصل على مساعدة",
+  "profile.hello_name": "مرحباً {name}",
+  "profile.help": "مساعدة",
+  "profile.search_orders": "البحث في الطلبات",
+  "profile.you_have_itemcount_items_in_your": "لديك {itemCount} عناصر في سلة التسوق",
+  "profile.your_cart_is_empty": "سلة التسوق فارغة"
+}

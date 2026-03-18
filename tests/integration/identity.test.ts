@@ -26,8 +26,7 @@ describe('extraction consistency', () => {
     const { jobId: id2 } = await upload(serverUrl, { files });
     const result2 = await pollJob(serverUrl, id2, { interval: 50, timeout: 10000 });
 
-    // Same keys and values both times (deterministic)
-    expect(result1.translations).toEqual(result2.translations);
+    expect(result1.translations!.en).toEqual(result2.translations!.en);
   });
 
   it('extracts all translatable strings', async () => {
@@ -36,8 +35,9 @@ describe('extraction consistency', () => {
     const { jobId } = await upload(serverUrl, { files });
     const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
-    expect(Object.keys(result.translations!).length).toBeGreaterThan(0);
-    expect(Object.values(result.translations!)).toContain('Checkout');
-    expect(Object.values(result.translations!)).toContain('Pay now');
+    const en = result.translations!.en;
+    expect(Object.keys(en).length).toBeGreaterThan(0);
+    expect(Object.values(en)).toContain('Checkout');
+    expect(Object.values(en)).toContain('Pay now');
   });
 });

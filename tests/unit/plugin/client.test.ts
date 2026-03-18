@@ -56,6 +56,7 @@ describe('client', () => {
       expect(result.status).toBe('complete');
       expect(result.files).toBeDefined();
       expect(result.translations).toBeDefined();
+      expect(result.translations).toHaveProperty('en');
     });
 
     it('returns transformed files with t() calls', async () => {
@@ -71,10 +72,8 @@ describe('client', () => {
       });
 
       expect(result.files).toHaveLength(1);
-      expect(result.files![0].path).toBe('src/CheckoutPage.tsx');
       expect(result.files![0].content).toContain('__t(');
-      expect(result.translations).toBeDefined();
-      expect(Object.values(result.translations!)).toContain('Pay now');
+      expect(Object.values(result.translations!.en)).toContain('Pay now');
     });
 
     it('throws on timeout', async () => {

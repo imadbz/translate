@@ -63,7 +63,10 @@ export default function translatePlugin(options: PluginOptions): Plugin {
       }
 
       // 2. Upload to server
-      const { jobId } = await upload(opts.serverUrl, { files });
+      const { jobId } = await upload(opts.serverUrl, {
+        files,
+        projectId: opts.projectId,
+      });
 
       // 3. Poll for results
       const result: JobResponse = await pollJob(opts.serverUrl, jobId, {
@@ -79,19 +82,25 @@ export default function translatePlugin(options: PluginOptions): Plugin {
         }
       }
 
-      // 5. Write extracted translations to disk
+      // 5. Write all locale translation files to disk
       if (result.translations) {
         const translationsDir = resolve(projectRoot, opts.translationsDir);
         await mkdir(translationsDir, { recursive: true });
-        const outPath = resolve(translationsDir, 'en.json');
-        const sorted = Object.keys(result.translations).sort().reduce((acc, key) => {
-          acc[key] = result.translations![key];
-          return acc;
-        }, {} as Record<string, string>);
-        await writeFile(outPath, JSON.stringify(sorted, null, 2) + '\n');
 
+        const locales = Object.keys(result.translations);
+        for (const locale of locales) {
+          const data = result.translations[locale];
+          const sorted = Object.keys(data).sort().reduce((acc, key) => {
+            acc[key] = data[key];
+            return acc;
+          }, {} as Record<string, string>);
+          const outPath = resolve(translationsDir, `${locale}.json`);
+          await writeFile(outPath, JSON.stringify(sorted, null, 2) + '\n');
+        }
+
+        const enKeys = Object.keys(result.translations['en'] ?? {});
         console.log(
-          `[translate] Processed ${files.length} files, extracted ${Object.keys(sorted).length} strings → ${opts.translationsDir}/en.json`,
+          `[translate] Processed ${files.length} files, extracted ${enKeys.length} strings, ${locales.length} locales → ${opts.translationsDir}/`,
         );
       }
     },

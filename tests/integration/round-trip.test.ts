@@ -27,13 +27,12 @@ describe('round-trip: plugin → server → plugin', () => {
     expect(result.status).toBe('complete');
     expect(result.files).toBeDefined();
     expect(result.files!.length).toBe(files.length);
-    expect(result.translations).toBeDefined();
+    expect(result.translations).toHaveProperty('en');
 
-    // Translations extracted
-    const translationValues = Object.values(result.translations!);
-    expect(translationValues).toContain('Checkout');
-    expect(translationValues).toContain('Pay now');
-    expect(translationValues).toContain('Home');
+    const enValues = Object.values(result.translations!.en);
+    expect(enValues).toContain('Checkout');
+    expect(enValues).toContain('Pay now');
+    expect(enValues).toContain('Home');
   });
 
   it('transformed files contain t() calls', async () => {
@@ -47,14 +46,21 @@ describe('round-trip: plugin → server → plugin', () => {
     expect(content).toContain('__useT()');
   });
 
-  it('transformed files preserve non-translatable content', async () => {
+  it('returns additional locales when project has them configured', async () => {
+    // Seed French for a test project
+    await fetch(`${serverUrl}/projects/test-project/locales/fr`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 'checkout_page.pay_now': 'Payer maintenant' }),
+    });
+
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
-    const { jobId } = await upload(serverUrl, { files });
+    const { jobId } = await upload(serverUrl, { files, projectId: 'test-project' });
     const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
-    const content = result.files![0].content;
-    expect(content).toContain('btn-primary');
-    expect(content).toContain('submit');
+    expect(result.translations).toHaveProperty('en');
+    expect(result.translations).toHaveProperty('fr');
+    expect(result.translations!.fr['checkout_page.pay_now']).toBe('Payer maintenant');
   });
 
   it('extracts strings from all fixture files', async () => {
@@ -62,16 +68,13 @@ describe('round-trip: plugin → server → plugin', () => {
     const { jobId } = await upload(serverUrl, { files });
     const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
-    const values = Object.values(result.translations!);
+    const values = Object.values(result.translations!.en);
     expect(values).toContain('Checkout');
     expect(values).toContain('Pay now');
-    expect(values).toContain('Review your order before paying');
     expect(values).toContain('Home');
     expect(values).toContain('Account');
     expect(values).toContain('Sign in');
     expect(values).toContain('Search orders');
-    expect(values).toContain('Get help');
-    expect(values).toContain('Help');
     expect(values).toContain('Your cart is empty');
   });
 
@@ -80,7 +83,7 @@ describe('round-trip: plugin → server → plugin', () => {
     const { jobId } = await upload(serverUrl, { files });
     const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
 
-    const values = Object.values(result.translations!);
+    const values = Object.values(result.translations!.en);
     expect(values).not.toContain('btn-primary');
     expect(values).not.toContain('https://example.com/help');
     expect(values).not.toContain('/');

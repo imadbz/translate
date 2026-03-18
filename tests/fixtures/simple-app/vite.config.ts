@@ -4,7 +4,10 @@ import translate from '../../../packages/vite-plugin/src/index.js';
 
 export default defineConfig({
   plugins: [
-    translate({ serverUrl: 'http://localhost:3100' }),
+    translate({
+      serverUrl: 'http://localhost:3100',
+      projectId: 'simple-app',
+    }),
     react(),
   ],
   resolve: {

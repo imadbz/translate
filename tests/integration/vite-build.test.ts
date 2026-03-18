@@ -14,6 +14,16 @@ describe('Vite build integration', () => {
   beforeAll(async () => {
     const info = await startTestServer();
     serverUrl = info.url;
+
+    // Seed French for integration tests
+    await fetch(`${info.url}/projects/test-app/locales/fr`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        'checkout_page.checkout': 'Paiement',
+        'checkout_page.pay_now': 'Payer maintenant',
+      }),
+    });
   });
 
   afterAll(async () => {
@@ -21,27 +31,31 @@ describe('Vite build integration', () => {
     rmSync(translationsDir, { recursive: true, force: true });
   });
 
-  it('builds and writes en.json with extracted strings', async () => {
+  it('builds and writes locale files from server response', async () => {
     const outDir = resolve(fixtureRoot, 'dist-en');
 
     await build({
       configFile: false,
       root: fixtureRoot,
       plugins: [
-        translatePlugin({ serverUrl }),
+        translatePlugin({ serverUrl, projectId: 'test-app' }),
         react(),
       ],
       build: { outDir, write: true, minify: false },
       logLevel: 'silent',
     });
 
-    // en.json should have been written
+    // en.json should exist
     const enJsonPath = resolve(translationsDir, 'en.json');
     expect(existsSync(enJsonPath)).toBe(true);
-
     const enJson = JSON.parse(readFileSync(enJsonPath, 'utf-8'));
     expect(enJson).toHaveProperty('checkout_page.pay_now', 'Pay now');
-    expect(enJson).toHaveProperty('checkout_page.checkout', 'Checkout');
+
+    // fr.json should also exist (from server project config)
+    const frJsonPath = resolve(translationsDir, 'fr.json');
+    expect(existsSync(frJsonPath)).toBe(true);
+    const frJson = JSON.parse(readFileSync(frJsonPath, 'utf-8'));
+    expect(frJson).toHaveProperty('checkout_page.pay_now', 'Payer maintenant');
   });
 
   it('build output contains t() calls (not raw strings)', async () => {
@@ -66,7 +80,6 @@ describe('Vite build integration', () => {
       .map(f => readFileSync(resolve(assetsDir, f), 'utf-8'))
       .join('\n');
 
-    // Should contain translation keys (from t() calls)
     expect(bundleContent).toContain('checkout_page.pay_now');
     expect(bundleContent).toContain('checkout_page.checkout');
   });

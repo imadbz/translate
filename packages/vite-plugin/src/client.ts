@@ -12,7 +12,7 @@ export interface JobResponse {
   jobId: string;
   status: 'processing' | 'complete' | 'error';
   files?: { path: string; content: string }[];
-  translations?: Record<string, string>;
+  translations?: Record<string, Record<string, string>>;
   error?: string;
 }
 
