@@ -83,6 +83,23 @@ A GitHub Action that:
 
 This is deferred — the plugin works fully without it by reading whatever locale files exist on disk.
 
+## Bundler Support
+
+The plugin is built on [unplugin](https://github.com/unjs/unplugin), supporting all major bundlers from a single codebase.
+
+**Currently tested:**
+- Vite
+
+**TODO — add integration tests for:**
+- Webpack 5
+- Rollup
+- esbuild
+- Rspack
+- Rolldown
+- Farm
+
+Each bundler needs a fixture project + integration test that verifies: files uploaded, t() calls emitted, translations written, bundle works.
+
 ## Non-goals
 
 - **No per-locale builds.** One build, all locales bundled.

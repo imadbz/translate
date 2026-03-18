@@ -17,7 +17,7 @@ describe('translatePlugin', () => {
 
   it('returns a Vite plugin object', () => {
     const plugin = translatePlugin({ serverUrl });
-    expect(plugin.name).toBe('vite-plugin-translate');
+    expect(plugin.name).toContain('translate');
     expect(plugin.enforce).toBe('pre');
   });
 
@@ -31,12 +31,11 @@ describe('translatePlugin', () => {
   it('accepts all options', () => {
     const plugin = translatePlugin({
       serverUrl,
-      locale: 'fr',
       include: ['src/**/*.tsx'],
       exclude: ['**/*.test.*'],
       pollInterval: 100,
       pollTimeout: 5000,
     });
-    expect(plugin.name).toBe('vite-plugin-translate');
+    expect(plugin.name).toContain('translate');
   });
 });

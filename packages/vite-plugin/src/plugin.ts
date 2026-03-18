@@ -1,6 +1,6 @@
-import type { Plugin } from 'vite';
+import { createUnplugin } from 'unplugin';
 import { resolve, basename } from 'path';
-import { mkdir, readdir, readFile, writeFile } from 'fs/promises';
+import { mkdir, readdir, writeFile } from 'fs/promises';
 import { resolveOptions, type PluginOptions } from './options.js';
 import { collectFiles } from './collector.js';
 import { upload, pollJob, type JobResponse } from './client.js';
@@ -8,40 +8,44 @@ import { upload, pollJob, type JobResponse } from './client.js';
 const VIRTUAL_MODULE_ID = 'virtual:translate-translations';
 const RESOLVED_VIRTUAL_ID = '\0' + VIRTUAL_MODULE_ID;
 
-export default function translatePlugin(options: PluginOptions): Plugin {
+export const unplugin = createUnplugin((options: PluginOptions) => {
   const opts = resolveOptions(options);
   let projectRoot: string;
   const transformedFiles = new Map<string, string>();
 
   return {
-    name: 'vite-plugin-translate',
+    name: 'translate',
     enforce: 'pre',
 
-    configResolved(config) {
-      projectRoot = config.root;
+    vite: {
+      configResolved(config) {
+        projectRoot = config.root;
+      },
     },
 
     resolveId(id) {
       if (id === VIRTUAL_MODULE_ID) return RESOLVED_VIRTUAL_ID;
     },
 
+    async loadInclude(id) {
+      return id === RESOLVED_VIRTUAL_ID;
+    },
+
     async load(id) {
       if (id !== RESOLVED_VIRTUAL_ID) return;
 
-      // Read all JSON files from the translations directory and export them
       const translationsDir = resolve(projectRoot, opts.translationsDir);
       let files: string[];
       try {
-        files = await readdir(translationsDir);
+        files = (await readdir(translationsDir)).filter(f => f.endsWith('.json')).sort();
       } catch {
         return 'export default {};';
       }
 
-      const jsonFiles = files.filter(f => f.endsWith('.json')).sort();
       const imports: string[] = [];
       const entries: string[] = [];
 
-      for (const file of jsonFiles) {
+      for (const file of files) {
         const locale = basename(file, '.json');
         const varName = `__locale_${locale.replace(/[^a-zA-Z0-9]/g, '_')}`;
         imports.push(`import ${varName} from ${JSON.stringify(resolve(translationsDir, file))};`);
@@ -52,9 +56,11 @@ export default function translatePlugin(options: PluginOptions): Plugin {
     },
 
     async buildStart() {
+      // For non-Vite bundlers, default to cwd
+      if (!projectRoot) projectRoot = process.cwd();
+
       transformedFiles.clear();
 
-      // 1. Collect source files
       const files = await collectFiles(projectRoot, opts.include, opts.exclude);
 
       if (files.length === 0) {
@@ -62,19 +68,16 @@ export default function translatePlugin(options: PluginOptions): Plugin {
         return;
       }
 
-      // 2. Upload to server
       const { jobId } = await upload(opts.serverUrl, {
         files,
         projectId: opts.projectId,
       });
 
-      // 3. Poll for results
       const result: JobResponse = await pollJob(opts.serverUrl, jobId, {
         interval: opts.pollInterval,
         timeout: opts.pollTimeout,
       });
 
-      // 4. Store transformed files for the transform hook
       if (result.files) {
         for (const file of result.files) {
           const absolutePath = resolve(projectRoot, file.path);
@@ -82,7 +85,6 @@ export default function translatePlugin(options: PluginOptions): Plugin {
         }
       }
 
-      // 5. Write all locale translation files to disk
       if (result.translations) {
         const translationsDir = resolve(projectRoot, opts.translationsDir);
         await mkdir(translationsDir, { recursive: true });
@@ -105,22 +107,25 @@ export default function translatePlugin(options: PluginOptions): Plugin {
       }
     },
 
+    transformInclude(id) {
+      return /\.(tsx|jsx)$/.test(id);
+    },
+
     transform(code, id) {
-      // Serve transformed files from server
       const transformed = transformedFiles.get(id);
       if (transformed && transformed !== code) {
         return { code: transformed, map: null };
       }
 
-      // Auto-inject TranslateProvider into entry files that call createRoot/render
-      if (/\.(tsx|jsx)$/.test(id) && /createRoot|ReactDOM\.render/.test(code)) {
+      // Auto-inject TranslateProvider into entry files
+      if (/createRoot|ReactDOM\.render/.test(code)) {
         return { code: wrapEntryWithProvider(code), map: null };
       }
 
       return null;
     },
   };
-}
+});
 
 function wrapEntryWithProvider(code: string): string {
   const imports = [
@@ -128,12 +133,13 @@ function wrapEntryWithProvider(code: string): string {
     `import { TranslateProvider as __TranslateProvider } from "@translate/react";`,
   ].join('\n');
 
-  // Wrap JSX inside createRoot(...).render(<X />) with <TranslateProvider>
-  // Handles: .render(<App />) and .render(<StrictMode><App /></StrictMode>)
   const wrapped = code.replace(
     /\.render\(\s*(<[\s\S]*?>[\s\S]*?)\s*\)/,
-    (match, jsx) => `.render(<__TranslateProvider translations={__translations}>${jsx}</__TranslateProvider>)`,
+    (_match, jsx) => `.render(<__TranslateProvider translations={__translations}>${jsx}</__TranslateProvider>)`,
   );
 
   return imports + '\n' + wrapped;
 }
+
+// Default export for Vite (backwards compatible)
+export default unplugin.vite;
