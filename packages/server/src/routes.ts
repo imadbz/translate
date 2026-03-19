@@ -39,6 +39,8 @@ export function createRoutes(config: ServerConfig) {
       return c.json({ error: 'files array is required and must not be empty' }, 400);
     }
 
+    console.log(`[upload] projectId=${body.projectId ?? '(none)'} files=${body.files.map(f => f.path).join(', ')}`);
+
     const jobId = randomUUID();
     const job: Job = {
       id: jobId,

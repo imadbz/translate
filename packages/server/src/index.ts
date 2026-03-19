@@ -7,6 +7,7 @@ export { processFiles, type ProcessOptions } from './processor.js';
 export { extractStrings } from './extract/extractor.js';
 export { inlineTranslations } from './transform/inliner.js';
 export { emitTCalls } from './transform/emitter.js';
+export { llmTransformFile, clearTransformCache } from './transform/llm-transform.js';
 export { KeyRegistry, generateKey } from './transform/keygen.js';
 export { translateStrings } from './translate/llm.js';
 export { hashStrings, getCached, setCache, clearCache } from './translate/cache.js';

@@ -1,8 +1,5 @@
-import { extractStrings } from './extract/extractor.js';
-import { emitTCalls } from './transform/emitter.js';
-import { KeyRegistry } from './transform/keygen.js';
+import { llmTransformFile } from './transform/llm-transform.js';
 import { translateStrings } from './translate/llm.js';
-import type { ExtractedString } from './extract/visitors.js';
 
 export interface FileInput {
   path: string;
@@ -36,51 +33,41 @@ export async function processFiles(
   files: FileInput[],
   options?: ProcessOptions,
 ): Promise<JobResult> {
-  const keyRegistry = new KeyRegistry();
-  const keyGen = (filePath: string, value: string) => keyRegistry.register(filePath, value);
-
-  // Phase A: Extract all strings from all files
-  const allExtracted: ExtractedString[] = [];
+  // Phase A: LLM extracts strings and transforms each file
+  // Process sequentially to respect API rate limits
+  // TODO: find a solution to parallelize without hitting rate limits
+  //       options: batching files into fewer calls, request queuing with backoff, or higher rate limit tier
+  const transformResults: { path: string; code: string; strings: Record<string, string> }[] = [];
   for (const file of files) {
-    const extracted = extractStrings(file.content, file.path, keyGen);
-    allExtracted.push(...extracted);
+    if (options) {
+      const result = await llmTransformFile(file.content, file.path, { model: options.model });
+      transformResults.push({ path: file.path, ...result });
+    } else {
+      transformResults.push({ path: file.path, code: file.content, strings: {} });
+    }
   }
 
-  // Build the source translations map (en.json)
-  const sourceTranslations: Record<string, string> = {};
-  for (const entry of allExtracted) {
-    sourceTranslations[entry.key] = entry.value;
-  }
-
-  // Phase B: Emit t() calls into source files
-  const emitRegistry = new KeyRegistry();
-  const emitKeyGen = (filePath: string, value: string) => emitRegistry.register(filePath, value);
-
+  // Collect transformed files and merge all extracted strings
   const outputFiles: FileOutput[] = [];
-  for (const file of files) {
-    const transformed = emitTCalls(file.content, file.path, emitKeyGen);
-    outputFiles.push({ path: file.path, content: transformed });
+  const sourceTranslations: Record<string, string> = {};
+
+  for (const result of transformResults) {
+    outputFiles.push({ path: result.path, content: result.code });
+    Object.assign(sourceTranslations, result.strings);
   }
 
-  // Phase C: Translate to all configured locales via LLM
+  // Phase B: Translate to all configured locales via LLM
   const allTranslations: Record<string, Record<string, string>> = {
     en: sourceTranslations,
   };
 
   if (options && Object.keys(sourceTranslations).length > 0) {
-    const translationPromises = options.locales
-      .filter(l => l !== 'en')
-      .map(async (locale) => {
-        const translated = await translateStrings({
-          model: options.model,
-          sourceStrings: sourceTranslations,
-          targetLocale: locale,
-        });
-        return [locale, translated] as const;
+    for (const locale of options.locales.filter(l => l !== 'en')) {
+      const translated = await translateStrings({
+        model: options.model,
+        sourceStrings: sourceTranslations,
+        targetLocale: locale,
       });
-
-    const results = await Promise.all(translationPromises);
-    for (const [locale, translated] of results) {
       allTranslations[locale] = translated;
     }
   }

@@ -100,6 +100,19 @@ The plugin is built on [unplugin](https://github.com/unjs/unplugin), supporting 
 
 Each bundler needs a fixture project + integration test that verifies: files uploaded, t() calls emitted, translations written, bundle works.
 
+## TODO: LLM Rate Limit Handling
+
+Currently files are processed sequentially to respect API rate limits (e.g. 5 req/min on Anthropic free tier). This is not acceptable for production — a 50-file project would take minutes.
+
+Possible solutions:
+- **Batch multiple files into a single LLM call** — send 5-10 files per prompt, reducing total requests
+- **Request queue with rate-aware backoff** — track rate limit headers, schedule requests to stay under the limit
+- **Higher rate limit tier** — production server would have a paid plan with much higher limits
+- **Hybrid approach** — use AST for simple cases (obvious JSX text), LLM only for ambiguous strings
+- **Persistent cache** — only re-process files that changed since last build (hash-based, stored on server)
+
+This is a critical path issue that must be solved before production use.
+
 ## Non-goals
 
 - **No per-locale builds.** One build, all locales bundled.

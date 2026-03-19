@@ -33,6 +33,6 @@ export function resolveOptions(options: PluginOptions): ResolvedOptions {
     include: options.include ?? ['src/**/*.{tsx,jsx}'],
     exclude: options.exclude ?? ['**/*.test.*', '**/*.spec.*'],
     pollInterval: options.pollInterval ?? 500,
-    pollTimeout: options.pollTimeout ?? 60000,
+    pollTimeout: options.pollTimeout ?? 180000,
   };
 }
