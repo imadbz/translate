@@ -1,5 +1,5 @@
-import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 
 export function getModel() {
-  return anthropic('claude-haiku-4-5-20251001');
+  return google('gemini-2.5-flash');
 }

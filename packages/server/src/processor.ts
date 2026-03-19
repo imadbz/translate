@@ -33,19 +33,16 @@ export async function processFiles(
   files: FileInput[],
   options?: ProcessOptions,
 ): Promise<JobResult> {
-  // Phase A: LLM extracts strings and transforms each file
-  // Process sequentially to respect API rate limits
-  // TODO: find a solution to parallelize without hitting rate limits
-  //       options: batching files into fewer calls, request queuing with backoff, or higher rate limit tier
-  const transformResults: { path: string; code: string; strings: Record<string, string> }[] = [];
-  for (const file of files) {
-    if (options) {
-      const result = await llmTransformFile(file.content, file.path, { model: options.model });
-      transformResults.push({ path: file.path, ...result });
-    } else {
-      transformResults.push({ path: file.path, code: file.content, strings: {} });
-    }
-  }
+  // Phase A: LLM extracts strings and transforms all files in parallel
+  const transformResults = await Promise.all(
+    files.map(async (file) => {
+      if (options) {
+        const result = await llmTransformFile(file.content, file.path, { model: options.model });
+        return { path: file.path, ...result };
+      }
+      return { path: file.path, code: file.content, strings: {} as Record<string, string> };
+    }),
+  );
 
   // Collect transformed files and merge all extracted strings
   const outputFiles: FileOutput[] = [];
@@ -56,7 +53,7 @@ export async function processFiles(
     Object.assign(sourceTranslations, result.strings);
   }
 
-  // Phase B: Translate to all configured locales via LLM
+  // Phase B: Translate to all configured locales via LLM (sequential to avoid rate limits on translation)
   const allTranslations: Record<string, Record<string, string>> = {
     en: sourceTranslations,
   };
