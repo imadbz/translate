@@ -10,12 +10,22 @@ export interface TranslateContextValue {
   isRTL: boolean;
 }
 
+const fallback: TranslateContextValue = {
+  locale: 'en',
+  setLocale: (locale: string) => {
+    console.warn(`[translate] Language switching is not available in dev mode. Attempted to switch to "${locale}".`);
+  },
+  availableLocales: ['en'],
+  translations: {},
+  t: (key: string) => key,
+  dir: 'ltr',
+  isRTL: false,
+};
+
 export const TranslateContext = createContext<TranslateContextValue | null>(null);
 
 export function useTranslateContext(): TranslateContextValue {
   const ctx = useContext(TranslateContext);
-  if (!ctx) {
-    throw new Error('useTranslateContext must be used within a <TranslateProvider>');
-  }
+  if (!ctx) return fallback;
   return ctx;
 }

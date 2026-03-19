@@ -11,8 +11,10 @@ export interface PluginOptions {
   exclude?: string[];
   /** Milliseconds between poll requests (default: 500) */
   pollInterval?: number;
-  /** Milliseconds before poll timeout (default: 60000) */
+  /** Milliseconds before poll timeout (default: 180000) */
   pollTimeout?: number;
+  /** Run translation server during dev (default: false — only runs on build) */
+  translateInDev?: boolean;
 }
 
 export interface ResolvedOptions {
@@ -23,6 +25,7 @@ export interface ResolvedOptions {
   exclude: string[];
   pollInterval: number;
   pollTimeout: number;
+  translateInDev: boolean;
 }
 
 export function resolveOptions(options: PluginOptions): ResolvedOptions {
@@ -34,5 +37,6 @@ export function resolveOptions(options: PluginOptions): ResolvedOptions {
     exclude: options.exclude ?? ['**/*.test.*', '**/*.spec.*'],
     pollInterval: options.pollInterval ?? 500,
     pollTimeout: options.pollTimeout ?? 180000,
+    translateInDev: options.translateInDev ?? false,
   };
 }

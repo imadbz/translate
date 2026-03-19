@@ -11,6 +11,7 @@ const RESOLVED_VIRTUAL_ID = '\0' + VIRTUAL_MODULE_ID;
 export const unplugin = createUnplugin((options: PluginOptions) => {
   const opts = resolveOptions(options);
   let projectRoot: string;
+  let isServe = false;
   const transformedFiles = new Map<string, string>();
 
   return {
@@ -20,6 +21,7 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
     vite: {
       configResolved(config) {
         projectRoot = config.root;
+        isServe = config.command === 'serve';
       },
     },
 
@@ -34,6 +36,7 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
     async load(id) {
       if (id !== RESOLVED_VIRTUAL_ID) return;
 
+      // Always try to load translations from disk (works for both dev and build)
       const translationsDir = resolve(projectRoot, opts.translationsDir);
       let files: string[];
       try {
@@ -56,8 +59,13 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
     },
 
     async buildStart() {
-      // For non-Vite bundlers, default to cwd
       if (!projectRoot) projectRoot = process.cwd();
+
+      // In dev mode, skip server calls unless explicitly enabled
+      if (isServe && !opts.translateInDev) {
+        console.log('[translate] Dev mode — skipping server, using translations from disk');
+        return;
+      }
 
       transformedFiles.clear();
 
@@ -112,6 +120,15 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
     },
 
     transform(code, id) {
+      // In dev mode (no server), don't transform files — serve originals
+      if (isServe && !opts.translateInDev) {
+        // Still wrap the entry with provider + dev warning
+        if (/createRoot|ReactDOM\.render/.test(code)) {
+          return { code: wrapEntryWithProvider(code, true), map: null };
+        }
+        return null;
+      }
+
       const transformed = transformedFiles.get(id);
       if (transformed && transformed !== code) {
         return { code: transformed, map: null };
@@ -127,18 +144,22 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
   };
 });
 
-function wrapEntryWithProvider(code: string): string {
+function wrapEntryWithProvider(code: string, devMode = false): string {
   const imports = [
     `import __translations from "${VIRTUAL_MODULE_ID}";`,
     `import { TranslateProvider as __TranslateProvider } from "@translate/react";`,
   ].join('\n');
+
+  const devWarning = devMode
+    ? `console.warn("[translate] Translations are disabled in dev mode. Run 'vite build' to generate translations, or set translateInDev: true in plugin options.");`
+    : '';
 
   const wrapped = code.replace(
     /\.render\(\s*(<[\s\S]*?>[\s\S]*?)\s*\)/,
     (_match, jsx) => `.render(<__TranslateProvider translations={__translations}>${jsx}</__TranslateProvider>)`,
   );
 
-  return imports + '\n' + wrapped;
+  return imports + '\n' + devWarning + '\n' + wrapped;
 }
 
 // Default export for Vite (backwards compatible)
