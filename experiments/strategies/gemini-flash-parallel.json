@@ -1,0 +1,10 @@
+{
+  "name": "gemini-flash-parallel",
+  "description": "Parallel per-file LLM extraction with Gemini Flash (paid tier)",
+  "model": "gemini-2.5-flash",
+  "provider": "google",
+  "mode": "per-file-parallel",
+  "concurrency": 10,
+  "promptCaching": false,
+  "notes": "All files processed in parallel. Paid tier should handle the RPM."
+}

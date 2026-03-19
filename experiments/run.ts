@@ -96,13 +96,14 @@ async function main() {
   console.log(`   Model: ${strategy.model}`);
   console.log(`   Mode: ${strategy.mode}\n`);
 
-  const fileResults: FileResult[] = [];
   const allExtracted: Record<string, string> = {};
   let totalCost = 0;
 
   const fixtureFiles = fs.readdirSync(fixtureDir).filter(f => f.endsWith('.tsx')).sort();
+  const isParallel = strategy.mode?.includes('parallel');
 
-  for (const fileName of fixtureFiles) {
+  // Process files — parallel or sequential based on strategy
+  const processFile = async (fileName: string) => {
     const filePath = `src/${fileName}`;
     const code = fs.readFileSync(path.join(fixtureDir, fileName), 'utf-8');
     const expected = groundTruth.expected[filePath];
@@ -111,11 +112,9 @@ async function main() {
     const result = await llmTransformFile(code, filePath, { model });
     const latencyMs = Date.now() - start;
 
-    // Collect extracted values
     const extractedValues = new Set(Object.values(result.strings));
     Object.assign(allExtracted, result.strings);
 
-    // Compare against ground truth
     const expectedExtract = expected?.extract ?? {};
     const expectedSkip = expected?.skip ?? {};
     const expectedMaybe = expected?.maybe ?? {};
@@ -125,7 +124,6 @@ async function main() {
     const falsePositives: string[] = [];
     const maybeCorrect: string[] = [];
 
-    // Check expected extractions
     for (const value of Object.keys(expectedExtract)) {
       if (extractedValues.has(value)) {
         correct.push(value);
@@ -134,7 +132,6 @@ async function main() {
       }
     }
 
-    // Check for false positives (extracted something that should be skipped)
     for (const value of extractedValues) {
       if (!expectedExtract[value] && !expectedMaybe?.[value]) {
         if (expectedSkip[value]) {
@@ -146,17 +143,15 @@ async function main() {
       }
     }
 
-    // Token/cost estimation (approximate from total tokens)
-    // We don't have per-call breakdown here, so use totalTokens as estimate
-    const inputTokens = 4263 + 200; // cached system prompt + file content estimate
-    const outputTokens = JSON.stringify(result).length / 4; // rough estimate
+    const inputTokens = 4263 + 200;
+    const outputTokens = JSON.stringify(result).length / 4;
 
     const fr: FileResult = {
       file: filePath,
       latencyMs,
       totalTokens: inputTokens + outputTokens,
-      cacheCreated: fileResults.length === 0 ? 4263 : 0,
-      cacheRead: fileResults.length > 0 ? 4263 : 0,
+      cacheCreated: 0,
+      cacheRead: 0,
       extracted: result.strings,
       correct,
       missed,
@@ -164,14 +159,30 @@ async function main() {
       maybeCorrect,
     };
 
-    fileResults.push(fr);
-
     const status = missed.length === 0 && falsePositives.length === 0 ? '✅' : '⚠️';
     console.log(`${status} ${filePath} — ${correct.length}/${Object.keys(expectedExtract).length} correct, ${missed.length} missed, ${falsePositives.length} false+, ${latencyMs}ms`);
     if (missed.length > 0) console.log(`   MISSED: ${missed.join(', ')}`);
     if (falsePositives.length > 0) console.log(`   FALSE+: ${falsePositives.join(', ')}`);
     if (maybeCorrect.length > 0) console.log(`   MAYBE: ${maybeCorrect.join(', ')}`);
+
+    return fr;
+  };
+
+  let fileResults: FileResult[];
+  const extractionStart = Date.now();
+
+  if (isParallel) {
+    console.log(`⚡ Running ${fixtureFiles.length} files in parallel\n`);
+    fileResults = await Promise.all(fixtureFiles.map(processFile));
+  } else {
+    fileResults = [];
+    for (const fileName of fixtureFiles) {
+      fileResults.push(await processFile(fileName));
+    }
   }
+
+  const extractionMs = Date.now() - extractionStart;
+  console.log(`\n⏱️  Extraction wall time: ${(extractionMs / 1000).toFixed(1)}s`);
 
   // Run translation for one locale to measure
   console.log('\n--- Translation ---');

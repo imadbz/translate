@@ -1,0 +1,221 @@
+{
+  "strategy": "gemini-flash-parallel",
+  "model": "gemini-2.5-flash",
+  "timestamp": "2026-03-19T09:00:45.602Z",
+  "files": [
+    {
+      "file": "src/App.tsx",
+      "latencyMs": 10589,
+      "totalTokens": 4845.25,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "app.language": "Language:",
+        "app.edge_cases": "Edge Cases"
+      },
+      "correct": [
+        "Language:",
+        "Edge Cases"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/CheckoutPage.tsx",
+      "latencyMs": 4502,
+      "totalTokens": 4601,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "checkout_page.checkout": "Checkout",
+        "checkout_page.review_order_before_paying": "Review your order before paying",
+        "checkout_page.pay_now": "Pay now"
+      },
+      "correct": [
+        "Checkout",
+        "Review your order before paying",
+        "Pay now"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/ConsoleLog.tsx",
+      "latencyMs": 5010,
+      "totalTokens": 4564,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "console_log.visible_text": "Visible text"
+      },
+      "correct": [
+        "Visible text"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/CssClasses.tsx",
+      "latencyMs": 4501,
+      "totalTokens": 4608,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "css_classes.dashboard": "Dashboard",
+        "css_classes.save_changes": "Save changes"
+      },
+      "correct": [
+        "Dashboard",
+        "Save changes"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/Nav.tsx",
+      "latencyMs": 6512,
+      "totalTokens": 4596.5,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "nav.main_navigation": "Main navigation",
+        "nav.home": "Home",
+        "nav.account": "Account",
+        "nav.sign_in": "Sign in"
+      },
+      "correct": [
+        "Main navigation",
+        "Home",
+        "Account",
+        "Sign in"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/Plurals.tsx",
+      "latencyMs": 6400,
+      "totalTokens": 4609.25,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "plurals.one_item": "1 item",
+        "plurals.count_items": "{count} items",
+        "plurals.new_messages": "You have {count} new messages",
+        "plurals.no_items_found": "No items found"
+      },
+      "correct": [
+        "1 item",
+        "{count} items",
+        "You have {count} new messages",
+        "No items found"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/Profile.tsx",
+      "latencyMs": 5910,
+      "totalTokens": 4671.5,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "profile.hello_name": "Hello {name}",
+        "profile.items_in_cart": "You have {itemCount} items in your cart",
+        "profile.search_orders": "Search orders",
+        "profile.get_help": "Get help",
+        "profile.help": "Help",
+        "profile.cart_empty": "Your cart is empty"
+      },
+      "correct": [
+        "Hello {name}",
+        "You have {itemCount} items in your cart",
+        "Search orders",
+        "Get help",
+        "Help",
+        "Your cart is empty"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/TypedComponent.tsx",
+      "latencyMs": 14842,
+      "totalTokens": 4693.25,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "typed_component.card_content": "Card content",
+        "typed_component.my_item": "My Item",
+        "typed_component.a_detailed_description": "A detailed description"
+      },
+      "correct": [
+        "Card content"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": [
+        "My Item",
+        "A detailed description"
+      ]
+    },
+    {
+      "file": "src/UrlsAndPaths.tsx",
+      "latencyMs": 5014,
+      "totalTokens": 4632.75,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {
+        "urls_and_paths.view_api_docs": "View API docs",
+        "urls_and_paths.company_logo": "Company logo",
+        "urls_and_paths.contact_us_for_more_information": "Contact us for more information"
+      },
+      "correct": [
+        "View API docs",
+        "Company logo",
+        "Contact us for more information"
+      ],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    },
+    {
+      "file": "src/main.tsx",
+      "latencyMs": 3312,
+      "totalTokens": 4504.75,
+      "cacheCreated": 0,
+      "cacheRead": 0,
+      "extracted": {},
+      "correct": [],
+      "missed": [],
+      "falsePositives": [],
+      "maybeCorrect": []
+    }
+  ],
+  "translation": [
+    {
+      "locale": "fr",
+      "latencyMs": 5870,
+      "totalTokens": 0,
+      "keyCount": 28
+    }
+  ],
+  "totals": {
+    "files": 10,
+    "latencyMs": 66592,
+    "totalTokens": 46326.25,
+    "extractedCount": 28,
+    "correctCount": 26,
+    "missedCount": 0,
+    "falsePositiveCount": 0,
+    "accuracy": 100,
+    "estimatedCostUsd": 0
+  }
+}
