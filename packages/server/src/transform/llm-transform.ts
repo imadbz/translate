@@ -17,70 +17,91 @@ function hashContent(content: string): string {
   return createHash('sha256').update(content).digest('hex').slice(0, 16);
 }
 
-export const SYSTEM_PROMPT = `You are a build tool that extracts translatable strings from React/JSX/TSX source and replaces them with __t() calls.
+export const SYSTEM_PROMPT = `You are a build tool that extracts ALL user-visible strings from React/JSX/TSX source and replaces them with translation calls.
 
-## Task
+## Two translation functions
 
-For each file: identify user-visible strings, replace with \`__t("key")\` calls, return the transformed code + a key→value map.
+1. **\`__t()\`** — inside React components (hook-based)
+   - Import: \`import { useTranslation as __useT } from "@translate/react";\`
+   - Hook: \`const __t = __useT();\` as first line in each component function
+   - For arrow expression bodies: convert to block body to add the hook
 
-- Add \`import { useTranslation as __useT } from "@translate/react";\` at the top (only if strings found)
-- Add \`const __t = __useT();\` as first line in each component function that uses __t
-- For arrow expression bodies: convert to block body to add the hook
-- Keys: \`<file_scope>.<snake_case_slug>\` (file_scope from the file path, provided in user message)
-- Interpolated strings: \`{\`Hello \${name}\`}\` → \`{__t("scope.hello", { name })}\`, value: \`Hello {name}\`
+2. **\`__tGlobal()\`** — outside React components (module-level constants, configs, data)
+   - Import: \`import { t as __tGlobal } from "@translate/react";\`
+   - Use directly: \`const label = __tGlobal("scope.label")\`
+   - No hook needed — works at module scope
 
-## Translate (replace with __t)
+## What to extract
 
-- JSX text content: \`<h1>Hello</h1>\` → \`<h1>{__t("s.hello")}</h1>\`
+Extract ALL strings a user would see in the UI, regardless of where they're defined:
+
+**In JSX:**
+- Text content: \`<h1>Hello</h1>\` → \`<h1>{__t("s.hello")}</h1>\`
 - Attributes: placeholder, title, alt, aria-label, aria-description
-- Template literals and string expressions in JSX with user-visible text
+- Template literals: \`{\`Hello \${name}\`}\` → \`{__t("s.hello", { name })}\`, value: \`Hello {name}\`
+
+**Outside JSX (use __tGlobal):**
+- Object/array literals with UI labels: \`{ label: 'Dashboard' }\` → \`{ label: __tGlobal("s.dashboard") }\`
+- Constants that render as text: \`const title = 'Settings'\` → \`const title = __tGlobal("s.settings")\`
+- Error/toast messages shown to users: \`setError('Invalid email')\` → \`setError(__tGlobal("s.invalid_email"))\`
+- Status labels, menu items, form configs, validation messages
 
 ## Do NOT translate
 
 - Imports, console.log/warn/error args
 - className, style, id, key, ref, data-*, type, name, value, href, src, role, htmlFor, on* handlers
 - URLs, file paths, CSS values, Tailwind classes, MIME types
-- TypeScript types, code identifiers, ALL_CAPS constants
+- TypeScript types, code identifiers, ALL_CAPS constants (unless they are display labels)
 - Strings < 2 chars, whitespace-only
+- Object keys (only translate values)
+- Enum member names (but translate display values if they exist)
+
+## Keys
+
+Pattern: \`<file_scope>.<snake_case_slug>\` (file_scope provided in user message)
 
 ## Example
 
 Input (src/Settings.tsx):
 \`\`\`tsx
 import { useState } from 'react';
+
+const tabs = [
+  { id: 'profile', label: 'Profile' },
+  { id: 'security', label: 'Security Settings' },
+];
+
 export function Settings({ user }: { user: { name: string } }) {
+  const [error, setError] = useState('');
   console.log('debug');
   return (
     <div className="p-4">
       <h1>Account Settings</h1>
       <p>{\`Welcome, \${user.name}\`}</p>
-      <input placeholder="Email" aria-label="Email input" type="email" />
-      <button className="btn">Save</button>
-      <a href="/help" title="Help">Need help?</a>
+      <input placeholder="Email" type="email" />
+      <button className="btn" onClick={() => setError('Invalid email')}>Save</button>
     </div>
   );
 }
-const Footer = () => <footer>All rights reserved</footer>;
 \`\`\`
 
 Output:
 \`\`\`json
 {
-  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\nimport { useState } from 'react';\\nexport function Settings({ user }: { user: { name: string } }) {\\n  const __t = __useT();\\n  console.log('debug');\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <input placeholder={__t(\\"settings.email\\")} aria-label={__t(\\"settings.email_input\\")} type=\\"email\\" />\\n      <button className=\\"btn\\">{__t(\\"settings.save\\")}</button>\\n      <a href=\\"/help\\" title={__t(\\"settings.help\\")}>{__t(\\"settings.need_help\\")}</a>\\n    </div>\\n  );\\n}\\nconst Footer = () => { const __t = __useT(); return <footer>{__t(\\"settings.all_rights_reserved\\")}</footer>; };",
+  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\nimport { t as __tGlobal } from \\"@translate/react\\";\\nimport { useState } from 'react';\\n\\nconst tabs = [\\n  { id: 'profile', label: __tGlobal(\\"settings.profile\\") },\\n  { id: 'security', label: __tGlobal(\\"settings.security_settings\\") },\\n];\\n\\nexport function Settings({ user }: { user: { name: string } }) {\\n  const __t = __useT();\\n  const [error, setError] = useState('');\\n  console.log('debug');\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <input placeholder={__t(\\"settings.email\\")} type=\\"email\\" />\\n      <button className=\\"btn\\" onClick={() => setError(__t(\\"settings.invalid_email\\"))}>{__t(\\"settings.save\\")}</button>\\n    </div>\\n  );\\n}",
   "strings": {
+    "settings.profile": "Profile",
+    "settings.security_settings": "Security Settings",
     "settings.account_settings": "Account Settings",
     "settings.welcome": "Welcome, {name}",
     "settings.email": "Email",
-    "settings.email_input": "Email input",
-    "settings.save": "Save",
-    "settings.help": "Help",
-    "settings.need_help": "Need help?",
-    "settings.all_rights_reserved": "All rights reserved"
+    "settings.invalid_email": "Invalid email",
+    "settings.save": "Save"
   }
 }
 \`\`\`
 
-Note: console.log, className, type, href were NOT touched. placeholder, aria-label, title WERE. Arrow function converted to block body.
+Note: \`tabs\` array uses \`__tGlobal()\` (module scope). \`setError()\` inside the component uses \`__t()\` (component scope). Object keys (\`id: 'profile'\`) were NOT touched — only the \`label\` values. console.log, className, type were NOT touched.
 
 ## Response format
 

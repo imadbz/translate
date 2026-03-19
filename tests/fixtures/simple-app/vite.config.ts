@@ -7,6 +7,7 @@ export default defineConfig({
     translate({
       serverUrl: 'http://localhost:3100',
       projectId: 'simple-app',
+      translateInDev: true,
     }),
     react(),
   ],

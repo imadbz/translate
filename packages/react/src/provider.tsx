@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 import { TranslateContext, type TranslateContextValue } from './context.js';
 import { resolveTranslation } from './t.js';
+import { __setGlobalTranslations } from './global.js';
 
 const RTL_LOCALES = new Set([
   'ar', 'arc', 'dv', 'fa', 'ha', 'he', 'khw', 'ks', 'ku', 'ps', 'ur', 'yi',
@@ -95,12 +96,16 @@ export function TranslateProvider({
   const isRTL = RTL_LOCALES.has(locale.split('-')[0]);
   const dir = isRTL ? 'rtl' as const : 'ltr' as const;
 
-  // Sync document direction and lang attribute
+  // Sync document direction, lang attribute, and global store
   useEffect(() => {
     if (typeof document === 'undefined') return;
     document.documentElement.dir = dir;
     document.documentElement.lang = locale;
   }, [dir, locale]);
+
+  useEffect(() => {
+    __setGlobalTranslations(translations, locale);
+  }, [translations, locale]);
 
   const value: TranslateContextValue = useMemo(
     () => ({ locale, setLocale, availableLocales, translations, t, dir, isRTL }),
