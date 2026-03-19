@@ -17,12 +17,14 @@
   "plurals.one_item": "1 article",
   "profile.cart_empty": "Votre panier est vide",
   "profile.get_help": "Obtenir de l'aide",
-  "profile.hello_name": "Bonjour {name}",
+  "profile.hello": "Bonjour {name}",
+  "profile.help": "Aide",
   "profile.items_in_cart": "Vous avez {itemCount} articles dans votre panier",
-  "profile.search_orders": "Rechercher les commandes",
+  "profile.search_orders": "Rechercher des commandes",
   "typed_component.card_content": "Contenu de la carte",
   "typed_component.detailed_description": "Une description détaillée",
   "typed_component.my_item": "Mon article",
   "urls_and_paths.company_logo": "Logo de l'entreprise",
-  "urls_and_paths.contact_for_info": "Contactez-nous pour plus d'informations"
+  "urls_and_paths.contact_us_info": "Nous contacter pour plus d'informations",
+  "urls_and_paths.view_api_docs": "Voir la documentation API"
 }

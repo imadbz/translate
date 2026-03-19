@@ -17,12 +17,14 @@
   "plurals.one_item": "1 item",
   "profile.cart_empty": "Your cart is empty",
   "profile.get_help": "Get help",
-  "profile.hello_name": "Hello {name}",
+  "profile.hello": "Hello {name}",
+  "profile.help": "Help",
   "profile.items_in_cart": "You have {itemCount} items in your cart",
   "profile.search_orders": "Search orders",
   "typed_component.card_content": "Card content",
   "typed_component.detailed_description": "A detailed description",
   "typed_component.my_item": "My Item",
   "urls_and_paths.company_logo": "Company logo",
-  "urls_and_paths.contact_for_info": "Contact us for more information"
+  "urls_and_paths.contact_us_info": "Contact us for more information",
+  "urls_and_paths.view_api_docs": "View API docs"
 }
