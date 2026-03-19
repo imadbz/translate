@@ -129,14 +129,20 @@ export const unplugin = createUnplugin((options: PluginOptions) => {
         return null;
       }
 
+      // Use server-transformed code if available
+      let currentCode = code;
       const transformed = transformedFiles.get(id);
       if (transformed && transformed !== code) {
-        return { code: transformed, map: null };
+        currentCode = transformed;
       }
 
-      // Auto-inject TranslateProvider into entry files
-      if (/createRoot|ReactDOM\.render/.test(code)) {
-        return { code: wrapEntryWithProvider(code), map: null };
+      // Auto-inject TranslateProvider into entry files (check both original and transformed)
+      if (/createRoot|ReactDOM\.render/.test(currentCode)) {
+        return { code: wrapEntryWithProvider(currentCode), map: null };
+      }
+
+      if (currentCode !== code) {
+        return { code: currentCode, map: null };
       }
 
       return null;

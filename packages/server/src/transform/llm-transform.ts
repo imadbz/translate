@@ -19,17 +19,12 @@ function hashContent(content: string): string {
 
 export const SYSTEM_PROMPT = `You are a build tool that extracts ALL user-visible strings from React/JSX/TSX source and replaces them with translation calls.
 
-## Two translation functions
+## Translation function
 
-1. **\`__t()\`** — inside React components (hook-based)
-   - Import: \`import { useTranslation as __useT } from "@translate/react";\`
-   - Hook: \`const __t = __useT();\` as first line in each component function
-   - For arrow expression bodies: convert to block body to add the hook
-
-2. **\`__tGlobal()\`** — outside React components (module-level constants, configs, data)
-   - Import: \`import { t as __tGlobal } from "@translate/react";\`
-   - Use directly: \`const label = __tGlobal("scope.label")\`
-   - No hook needed — works at module scope
+Use **\`__t()\`** for all translations (hook-based, reactive to locale changes):
+- Import: \`import { useTranslation as __useT } from "@translate/react";\`
+- Hook: \`const __t = __useT();\` as first line in each component function
+- For arrow expression bodies: convert to block body to add the hook
 
 ## What to extract
 
@@ -40,11 +35,11 @@ Extract ALL strings a user would see in the UI, regardless of where they're defi
 - Attributes: placeholder, title, alt, aria-label, aria-description
 - Template literals: \`{\`Hello \${name}\`}\` → \`{__t("s.hello", { name })}\`, value: \`Hello {name}\`
 
-**Outside JSX (use __tGlobal):**
-- Object/array literals with UI labels: \`{ label: 'Dashboard' }\` → \`{ label: __tGlobal("s.dashboard") }\`
-- Constants that render as text: \`const title = 'Settings'\` → \`const title = __tGlobal("s.settings")\`
-- Error/toast messages shown to users: \`setError('Invalid email')\` → \`setError(__tGlobal("s.invalid_email"))\`
-- Status labels, menu items, form configs, validation messages
+**Module-level data (objects, arrays, constants) with translatable strings:**
+- MOVE them inside the component function so \`__t()\` can be used
+- \`const tabs = [{ label: 'Dashboard' }]\` outside a component → move inside the component that uses it
+- Error messages in callbacks: \`setError('Invalid')\` → \`setError(__t("s.invalid"))\` (already inside component)
+- NEVER leave translatable strings at module scope — they must be inside a component where \`__t()\` is available
 
 ## Do NOT translate
 
@@ -99,7 +94,7 @@ export function Settings({ user, count }: { user: { name: string }; count: numbe
 Output:
 \`\`\`json
 {
-  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\nimport { t as __tGlobal } from \\"@translate/react\\";\\n\\nconst tabs = [\\n  { id: 'profile', label: __tGlobal(\\"settings.profile\\") },\\n];\\n\\nexport function Settings({ user, count }: { user: { name: string }; count: number }) {\\n  const __t = __useT();\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <p>{__t(\\"settings.notifications\\", { count })}</p>\\n      <button className=\\"btn\\">{__t(\\"settings.save\\")}</button>\\n    </div>\\n  );\\n}",
+  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\n\\nexport function Settings({ user, count }: { user: { name: string }; count: number }) {\\n  const __t = __useT();\\n  const tabs = [\\n    { id: 'profile', label: __t(\\"settings.profile\\") },\\n  ];\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <p>{__t(\\"settings.notifications\\", { count })}</p>\\n      <button className=\\"btn\\">{__t(\\"settings.save\\")}</button>\\n    </div>\\n  );\\n}",
   "strings": {
     "settings.profile": "Profile",
     "settings.account_settings": "Account Settings",
@@ -110,7 +105,7 @@ Output:
 }
 \`\`\`
 
-Note: the ternary \`count === 1 ? '1 notification' : ...\` was replaced with a single \`__t()\` call. The plural forms are in the strings map. The runtime resolves the correct form based on locale + count.
+Note: \`tabs\` was MOVED inside the component so \`__t()\` can be used (module-scope strings are not reactive). The ternary was replaced with a single \`__t()\` call with plural forms.
 
 ## Response format
 

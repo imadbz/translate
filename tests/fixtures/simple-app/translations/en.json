@@ -3,7 +3,7 @@
   "app.language": "Language:",
   "checkout_page.checkout": "Checkout",
   "checkout_page.pay_now": "Pay now",
-  "checkout_page.review_your_order_before_paying": "Review your order before paying",
+  "checkout_page.review_order_before_paying": "Review your order before paying",
   "console_log.visible_text": "Visible text",
   "css_classes.dashboard": "Dashboard",
   "css_classes.save_changes": "Save changes",
@@ -11,16 +11,24 @@
   "nav.home": "Home",
   "nav.main_navigation": "Main navigation",
   "nav.sign_in": "Sign in",
-  "plurals.items": "{count} items",
+  "plurals.items": {
+    "one": "1 item",
+    "other": "{count} items"
+  },
+  "plurals.new_messages": {
+    "one": "You have {count} new message",
+    "other": "You have {count} new messages"
+  },
   "plurals.no_items_found": "No items found",
-  "plurals.one_item": "1 item",
-  "plurals.you_have_new_messages": "You have {count} new messages",
+  "profile.cart_empty": "Your cart is empty",
   "profile.get_help": "Get help",
   "profile.hello": "Hello {name}",
   "profile.help": "Help",
+  "profile.items_in_cart": {
+    "one": "You have {itemCount} item in your cart",
+    "other": "You have {itemCount} items in your cart"
+  },
   "profile.search_orders": "Search orders",
-  "profile.you_have_items_in_your_cart": "You have {itemCount} items in your cart",
-  "profile.your_cart_is_empty": "Your cart is empty",
   "typed_component.a_detailed_description": "A detailed description",
   "typed_component.card_content": "Card content",
   "typed_component.my_item": "My Item",

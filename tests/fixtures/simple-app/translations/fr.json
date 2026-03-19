@@ -1,9 +1,9 @@
 {
-  "app.edge_cases": "Cas particuliers",
-  "app.language": "Langue:",
+  "app.edge_cases": "Cas limites",
+  "app.language": "Langue :",
   "checkout_page.checkout": "Paiement",
   "checkout_page.pay_now": "Payer maintenant",
-  "checkout_page.review_your_order_before_paying": "Vérifiez votre commande avant de payer",
+  "checkout_page.review_order_before_paying": "Vérifier votre commande avant de payer",
   "console_log.visible_text": "Texte visible",
   "css_classes.dashboard": "Tableau de bord",
   "css_classes.save_changes": "Enregistrer les modifications",
@@ -11,16 +11,24 @@
   "nav.home": "Accueil",
   "nav.main_navigation": "Navigation principale",
   "nav.sign_in": "Se connecter",
-  "plurals.items": "{count} articles",
+  "plurals.items": {
+    "one": "1 article",
+    "other": "{count} articles"
+  },
+  "plurals.new_messages": {
+    "one": "Vous avez {count} nouveau message",
+    "other": "Vous avez {count} nouveaux messages"
+  },
   "plurals.no_items_found": "Aucun article trouvé",
-  "plurals.one_item": "1 article",
-  "plurals.you_have_new_messages": "Vous avez {count} nouveaux messages",
+  "profile.cart_empty": "Votre panier est vide",
   "profile.get_help": "Obtenir de l'aide",
   "profile.hello": "Bonjour {name}",
   "profile.help": "Aide",
+  "profile.items_in_cart": {
+    "one": "Vous avez {itemCount} article dans votre panier",
+    "other": "Vous avez {itemCount} articles dans votre panier"
+  },
   "profile.search_orders": "Rechercher des commandes",
-  "profile.you_have_items_in_your_cart": "Vous avez {itemCount} articles dans votre panier",
-  "profile.your_cart_is_empty": "Votre panier est vide",
   "typed_component.a_detailed_description": "Une description détaillée",
   "typed_component.card_content": "Contenu de la carte",
   "typed_component.my_item": "Mon article",
