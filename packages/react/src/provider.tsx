@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 import { TranslateContext, type TranslateContextValue } from './context.js';
-import { resolveTranslation } from './t.js';
+import { resolveTranslation, type AllTranslations } from './t.js';
 import { __setGlobalTranslations } from './global.js';
 
 const RTL_LOCALES = new Set([
@@ -49,7 +49,7 @@ function matchLocale(
 
 export interface TranslateProviderProps {
   /** All translation maps keyed by locale: { en: {...}, fr: {...} } */
-  translations: Record<string, Record<string, string>>;
+  translations: AllTranslations;
   /** Fallback locale (default: "en") */
   defaultLocale?: string;
   children: ReactNode;

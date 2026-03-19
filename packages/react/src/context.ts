@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react';
+import type { AllTranslations } from './t.js';
 
 export interface TranslateContextValue {
   locale: string;
   setLocale: (locale: string) => void;
   availableLocales: string[];
-  translations: Record<string, Record<string, string>>;
+  translations: AllTranslations;
   t: (key: string, params?: Record<string, unknown>) => string;
   dir: 'ltr' | 'rtl';
   isRTL: boolean;

@@ -13,7 +13,7 @@ export interface FileOutput {
 
 export interface JobResult {
   files: FileOutput[];
-  translations: Record<string, Record<string, string>>;
+  translations: Record<string, Record<string, any>>;
 }
 
 export interface Job {
@@ -40,29 +40,40 @@ export async function processFiles(
         const result = await llmTransformFile(file.content, file.path, { model: options.model });
         return { path: file.path, ...result };
       }
-      return { path: file.path, code: file.content, strings: {} as Record<string, string> };
+      return { path: file.path, code: file.content, strings: {} as Record<string, any> };
     }),
   );
 
   // Collect transformed files and merge all extracted strings
   const outputFiles: FileOutput[] = [];
-  const sourceTranslations: Record<string, string> = {};
+  const sourceStrings: Record<string, any> = {};
 
   for (const result of transformResults) {
     outputFiles.push({ path: result.path, content: result.code });
-    Object.assign(sourceTranslations, result.strings);
+    Object.assign(sourceStrings, result.strings);
   }
 
-  // Phase B: Translate to all configured locales via LLM (sequential to avoid rate limits on translation)
-  const allTranslations: Record<string, Record<string, string>> = {
-    en: sourceTranslations,
+  // Build en translations: for regular strings use the value directly,
+  // for plural strings use the forms object (without _plural metadata)
+  const enTranslations: Record<string, any> = {};
+  for (const [key, value] of Object.entries(sourceStrings)) {
+    if (typeof value === 'object' && value._plural) {
+      enTranslations[key] = value.forms;
+    } else {
+      enTranslations[key] = value;
+    }
+  }
+
+  // Phase B: Translate to all configured locales via LLM
+  const allTranslations: Record<string, Record<string, any>> = {
+    en: enTranslations,
   };
 
-  if (options && Object.keys(sourceTranslations).length > 0) {
+  if (options && Object.keys(sourceStrings).length > 0) {
     for (const locale of options.locales.filter(l => l !== 'en')) {
       const translated = await translateStrings({
         model: options.model,
-        sourceStrings: sourceTranslations,
+        sourceStrings: sourceStrings,
         targetLocale: locale,
       });
       allTranslations[locale] = translated;

@@ -60,26 +60,37 @@ Extract ALL strings a user would see in the UI, regardless of where they're defi
 
 Pattern: \`<file_scope>.<snake_case_slug>\` (file_scope provided in user message)
 
+## Plurals
+
+When a string depends on a count/quantity variable, mark it as plural in the strings map.
+
+In the code: always use \`__t("key", { count })\` — same call signature, the runtime handles plural resolution.
+
+In the strings map: use an object with \`_plural: true\` and English \`one\`/\`other\` forms:
+\`\`\`
+"scope.items": { "_plural": true, "count_var": "count", "forms": { "one": "{count} item", "other": "{count} items" } }
+\`\`\`
+
+Detect plural patterns:
+- Ternary: \`count === 1 ? '1 item' : \\\`\${count} items\\\`\` → one plural key
+- Template with count: \`\\\`\${count} messages\\\`\` → plural if the noun changes form
+- Explicit singular/plural text near a numeric variable
+
 ## Example
 
 Input (src/Settings.tsx):
 \`\`\`tsx
-import { useState } from 'react';
-
 const tabs = [
   { id: 'profile', label: 'Profile' },
-  { id: 'security', label: 'Security Settings' },
 ];
 
-export function Settings({ user }: { user: { name: string } }) {
-  const [error, setError] = useState('');
-  console.log('debug');
+export function Settings({ user, count }: { user: { name: string }; count: number }) {
   return (
     <div className="p-4">
       <h1>Account Settings</h1>
       <p>{\`Welcome, \${user.name}\`}</p>
-      <input placeholder="Email" type="email" />
-      <button className="btn" onClick={() => setError('Invalid email')}>Save</button>
+      <p>{count === 1 ? '1 notification' : \`\${count} notifications\`}</p>
+      <button className="btn">Save</button>
     </div>
   );
 }
@@ -88,20 +99,18 @@ export function Settings({ user }: { user: { name: string } }) {
 Output:
 \`\`\`json
 {
-  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\nimport { t as __tGlobal } from \\"@translate/react\\";\\nimport { useState } from 'react';\\n\\nconst tabs = [\\n  { id: 'profile', label: __tGlobal(\\"settings.profile\\") },\\n  { id: 'security', label: __tGlobal(\\"settings.security_settings\\") },\\n];\\n\\nexport function Settings({ user }: { user: { name: string } }) {\\n  const __t = __useT();\\n  const [error, setError] = useState('');\\n  console.log('debug');\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <input placeholder={__t(\\"settings.email\\")} type=\\"email\\" />\\n      <button className=\\"btn\\" onClick={() => setError(__t(\\"settings.invalid_email\\"))}>{__t(\\"settings.save\\")}</button>\\n    </div>\\n  );\\n}",
+  "code": "import { useTranslation as __useT } from \\"@translate/react\\";\\nimport { t as __tGlobal } from \\"@translate/react\\";\\n\\nconst tabs = [\\n  { id: 'profile', label: __tGlobal(\\"settings.profile\\") },\\n];\\n\\nexport function Settings({ user, count }: { user: { name: string }; count: number }) {\\n  const __t = __useT();\\n  return (\\n    <div className=\\"p-4\\">\\n      <h1>{__t(\\"settings.account_settings\\")}</h1>\\n      <p>{__t(\\"settings.welcome\\", { name: user.name })}</p>\\n      <p>{__t(\\"settings.notifications\\", { count })}</p>\\n      <button className=\\"btn\\">{__t(\\"settings.save\\")}</button>\\n    </div>\\n  );\\n}",
   "strings": {
     "settings.profile": "Profile",
-    "settings.security_settings": "Security Settings",
     "settings.account_settings": "Account Settings",
     "settings.welcome": "Welcome, {name}",
-    "settings.email": "Email",
-    "settings.invalid_email": "Invalid email",
+    "settings.notifications": { "_plural": true, "count_var": "count", "forms": { "one": "{count} notification", "other": "{count} notifications" } },
     "settings.save": "Save"
   }
 }
 \`\`\`
 
-Note: \`tabs\` array uses \`__tGlobal()\` (module scope). \`setError()\` inside the component uses \`__t()\` (component scope). Object keys (\`id: 'profile'\`) were NOT touched — only the \`label\` values. console.log, className, type were NOT touched.
+Note: the ternary \`count === 1 ? '1 notification' : ...\` was replaced with a single \`__t()\` call. The plural forms are in the strings map. The runtime resolves the correct form based on locale + count.
 
 ## Response format
 
@@ -110,7 +119,10 @@ Respond with ONLY a JSON block — no other text:
 \`\`\`json
 {
   "code": "...transformed source...",
-  "strings": { "scope.key": "English text" }
+  "strings": {
+    "scope.key": "English text",
+    "scope.plural_key": { "_plural": true, "count_var": "varName", "forms": { "one": "...", "other": "..." } }
+  }
 }
 \`\`\``;
 
