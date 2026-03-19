@@ -21,10 +21,10 @@ describe('extraction consistency', () => {
     const files = await collectFiles(fixtureRoot, ['src/**/*.tsx'], []);
 
     const { jobId: id1 } = await upload(serverUrl, { files });
-    const result1 = await pollJob(serverUrl, id1, { interval: 50, timeout: 10000 });
+    const result1 = await pollJob(serverUrl, id1, { interval: 50, timeout: 60000 });
 
     const { jobId: id2 } = await upload(serverUrl, { files });
-    const result2 = await pollJob(serverUrl, id2, { interval: 50, timeout: 10000 });
+    const result2 = await pollJob(serverUrl, id2, { interval: 50, timeout: 60000 });
 
     expect(result1.translations!.en).toEqual(result2.translations!.en);
   });
@@ -33,7 +33,7 @@ describe('extraction consistency', () => {
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
 
     const { jobId } = await upload(serverUrl, { files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     const en = result.translations!.en;
     expect(Object.keys(en).length).toBeGreaterThan(0);

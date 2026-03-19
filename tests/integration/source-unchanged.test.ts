@@ -28,7 +28,7 @@ describe('source files unchanged', () => {
     }));
 
     const { jobId } = await upload(serverUrl, { files });
-    await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     const hashesAfter = files.map(f => ({
       path: f.path,

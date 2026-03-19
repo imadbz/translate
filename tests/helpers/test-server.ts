@@ -1,19 +1,16 @@
 import { serve } from '@hono/node-server';
-import { createRoutes } from '@translate/server';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createRoutes, getModel } from '@translate/server';
 import type { Server } from 'http';
 
 let server: ReturnType<typeof serve> | null = null;
 let serverPort = 0;
-
-const model = anthropic('claude-haiku-4-5-20251001');
 
 export function getServerUrl(): string {
   return `http://localhost:${serverPort}`;
 }
 
 export async function startTestServer(port = 0): Promise<{ url: string; port: number }> {
-  const app = createRoutes({ model });
+  const app = createRoutes({ model: getModel() });
 
   return new Promise((resolve) => {
     server = serve({ fetch: app.fetch, port }, (info) => {

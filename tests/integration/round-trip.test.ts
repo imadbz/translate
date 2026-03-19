@@ -22,7 +22,7 @@ describe('round-trip: plugin → server → plugin', () => {
     expect(files.length).toBeGreaterThan(0);
 
     const { jobId } = await upload(serverUrl, { files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     expect(result.status).toBe('complete');
     expect(result.files).toBeDefined();
@@ -38,7 +38,7 @@ describe('round-trip: plugin → server → plugin', () => {
   it('transformed files contain t() calls', async () => {
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
     const { jobId } = await upload(serverUrl, { files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     const content = result.files![0].content;
     expect(content).toContain('__t(');
@@ -56,7 +56,7 @@ describe('round-trip: plugin → server → plugin', () => {
 
     const files = await collectFiles(fixtureRoot, ['src/CheckoutPage.tsx'], []);
     const { jobId } = await upload(serverUrl, { files, projectId: 'test-project' });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     expect(result.translations).toHaveProperty('en');
     expect(result.translations).toHaveProperty('fr');
@@ -67,7 +67,7 @@ describe('round-trip: plugin → server → plugin', () => {
   it('extracts strings from all fixture files', async () => {
     const files = await collectFiles(fixtureRoot, ['src/**/*.tsx'], []);
     const { jobId } = await upload(serverUrl, { files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     const values = Object.values(result.translations!.en);
     expect(values).toContain('Checkout');
@@ -82,7 +82,7 @@ describe('round-trip: plugin → server → plugin', () => {
   it('does NOT extract CSS classes, URLs, or code strings', async () => {
     const files = await collectFiles(fixtureRoot, ['src/**/*.tsx'], []);
     const { jobId } = await upload(serverUrl, { files });
-    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 10000 });
+    const result = await pollJob(serverUrl, jobId, { interval: 50, timeout: 60000 });
 
     const values = Object.values(result.translations!.en);
     expect(values).not.toContain('btn-primary');

@@ -50,7 +50,7 @@ describe('client', () => {
 
       const result = await pollJob(serverUrl, jobId, {
         interval: 50,
-        timeout: 5000,
+        timeout: 60000,
       });
 
       expect(result.status).toBe('complete');
@@ -68,7 +68,7 @@ describe('client', () => {
 
       const result = await pollJob(serverUrl, jobId, {
         interval: 50,
-        timeout: 5000,
+        timeout: 60000,
       });
 
       expect(result.files).toHaveLength(1);
