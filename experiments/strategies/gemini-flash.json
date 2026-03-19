@@ -1,0 +1,10 @@
+{
+  "name": "gemini-flash",
+  "description": "Sequential per-file LLM extraction with Gemini Flash",
+  "model": "gemini-2.5-flash",
+  "provider": "google",
+  "mode": "per-file",
+  "concurrency": 1,
+  "promptCaching": false,
+  "notes": "Comparing speed and accuracy against Haiku baseline."
+}

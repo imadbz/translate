@@ -5,6 +5,7 @@ import { llmTransformFile, clearTransformCache } from '../packages/server/src/tr
 import { translateStrings } from '../packages/server/src/translate/llm.js';
 import { clearCache as clearTranslationCache } from '../packages/server/src/translate/cache.js';
 import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 
 interface GroundTruth {
   _meta: { description: string };
@@ -82,7 +83,10 @@ async function main() {
   const groundTruth: GroundTruth = JSON.parse(fs.readFileSync(groundTruthPath, 'utf-8'));
 
   const fixtureDir = path.resolve('tests/fixtures/simple-app/src');
-  const model = anthropic(strategy.model);
+  const providers: Record<string, (id: string) => any> = { anthropic, google };
+  const createModel = providers[strategy.provider];
+  if (!createModel) throw new Error(`Unknown provider: ${strategy.provider}`);
+  const model = createModel(strategy.model);
 
   // Clear all caches for clean measurement
   clearTransformCache();
