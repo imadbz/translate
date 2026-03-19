@@ -1,0 +1,122 @@
+{
+  "_meta": {
+    "description": "Expected string extractions for tests/fixtures/simple-app/src/",
+    "notes": [
+      "Keys are flexible — the eval checks values, not exact key names",
+      "Each entry documents WHY it should or should not be extracted"
+    ]
+  },
+  "expected": {
+    "src/App.tsx": {
+      "extract": {
+        "Language:": "Static JSX text in <strong> tag",
+        "Edge Cases": "Static JSX text in <h2> tag"
+      },
+      "skip": {
+        "@translate/react": "Import path",
+        "1rem": "CSS value",
+        "#f0f0f0": "CSS color",
+        "l": "Single character, loop variable"
+      }
+    },
+    "src/CheckoutPage.tsx": {
+      "extract": {
+        "Checkout": "Heading text",
+        "Review your order before paying": "Paragraph text",
+        "Pay now": "Button label"
+      },
+      "skip": {
+        "btn-primary": "className value",
+        "submit": "type attribute value"
+      }
+    },
+    "src/ConsoleLog.tsx": {
+      "extract": {
+        "Visible text": "Paragraph text rendered in JSX"
+      },
+      "skip": {
+        "Component rendered": "console.log argument",
+        "Deprecation warning": "console.warn argument",
+        "Something went wrong": "console.error argument"
+      }
+    },
+    "src/CssClasses.tsx": {
+      "extract": {
+        "Dashboard": "Span text content",
+        "Save changes": "Button label"
+      },
+      "skip": {
+        "flex items-center justify-between p-4": "className (Tailwind)",
+        "text-lg font-bold text-gray-900": "className (Tailwind)",
+        "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded": "className (Tailwind)"
+      }
+    },
+    "src/Nav.tsx": {
+      "extract": {
+        "Main navigation": "aria-label attribute (translatable)",
+        "Home": "Link text",
+        "Account": "Span text (logged in state)",
+        "Sign in": "Span text (logged out state)"
+      },
+      "skip": {
+        "/": "href attribute (URL path)"
+      }
+    },
+    "src/Plurals.tsx": {
+      "extract": {
+        "1 item": "Singular text in ternary",
+        "{count} items": "Template literal with count variable (plural)",
+        "You have {count} new messages": "Template literal with count variable",
+        "No items found": "Static span text"
+      },
+      "skip": {}
+    },
+    "src/Profile.tsx": {
+      "extract": {
+        "Hello {name}": "Template literal with name variable",
+        "You have {itemCount} items in your cart": "Template literal with itemCount variable",
+        "Search orders": "placeholder attribute (translatable)",
+        "Get help": "title attribute (translatable)",
+        "Help": "Link text",
+        "Your cart is empty": "Conditional span text"
+      },
+      "skip": {
+        "https://example.com/help": "href attribute (URL)"
+      }
+    },
+    "src/TypedComponent.tsx": {
+      "extract": {
+        "Card content": "Paragraph text in generic component"
+      },
+      "skip": {
+        "data.title": "Dynamic expression — renders prop data, not a static string",
+        "d.description": "Dynamic expression — renders prop data via renderItem"
+      },
+      "maybe": {
+        "My Item": "String literal in object — gets rendered via data.title. Debatable: it's test data, not a UI label.",
+        "A detailed description": "String literal in object — gets rendered via renderItem. Same debate as above."
+      }
+    },
+    "src/UrlsAndPaths.tsx": {
+      "extract": {
+        "View API docs": "Link text",
+        "Company logo": "alt attribute (translatable)",
+        "Contact us for more information": "Paragraph text"
+      },
+      "skip": {
+        "https://example.com/api/v1/users": "href attribute (URL)",
+        "/images/logo.png": "src attribute (file path)",
+        "/styles/main.css": "href attribute (file path)",
+        "stylesheet": "rel attribute (code value)"
+      }
+    },
+    "src/main.tsx": {
+      "extract": {},
+      "skip": {
+        "react-dom/client": "Import path",
+        "./App": "Import path",
+        "root": "DOM element ID"
+      }
+    }
+  }
+}

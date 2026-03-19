@@ -1,0 +1,10 @@
+{
+  "name": "baseline",
+  "description": "Sequential per-file LLM extraction with prompt caching",
+  "model": "claude-haiku-4-5-20251001",
+  "provider": "anthropic",
+  "mode": "per-file",
+  "concurrency": 1,
+  "promptCaching": true,
+  "notes": "Current default. ~10s per file, 4263 tokens cached system prompt."
+}

@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run tests/unit/",
-    "test:integration": "vitest run tests/integration/"
+    "test:integration": "vitest run tests/integration/",
+    "eval": "npx tsx experiments/run.ts"
   },
   "devDependencies": {
     "@babel/types": "^7.29.0",
