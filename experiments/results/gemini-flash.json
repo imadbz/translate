@@ -1,12 +1,12 @@
 {
   "strategy": "gemini-flash",
   "model": "gemini-2.5-flash",
-  "timestamp": "2026-03-19T08:48:32.794Z",
+  "timestamp": "2026-03-19T08:56:12.149Z",
   "files": [
     {
       "file": "src/App.tsx",
-      "latencyMs": 10718,
-      "totalTokens": 4845.25,
+      "latencyMs": 7661,
+      "totalTokens": 4844.75,
       "cacheCreated": 4263,
       "cacheRead": 0,
       "extracted": {
@@ -23,7 +23,7 @@
     },
     {
       "file": "src/CheckoutPage.tsx",
-      "latencyMs": 3964,
+      "latencyMs": 2903,
       "totalTokens": 4601,
       "cacheCreated": 0,
       "cacheRead": 4263,
@@ -43,7 +43,7 @@
     },
     {
       "file": "src/ConsoleLog.tsx",
-      "latencyMs": 5789,
+      "latencyMs": 5398,
       "totalTokens": 4564,
       "cacheCreated": 0,
       "cacheRead": 4263,
@@ -59,8 +59,8 @@
     },
     {
       "file": "src/CssClasses.tsx",
-      "latencyMs": 6316,
-      "totalTokens": 4607.5,
+      "latencyMs": 5457,
+      "totalTokens": 4608,
       "cacheCreated": 0,
       "cacheRead": 4263,
       "extracted": {
@@ -77,7 +77,7 @@
     },
     {
       "file": "src/Nav.tsx",
-      "latencyMs": 7025,
+      "latencyMs": 3777,
       "totalTokens": 4597,
       "cacheCreated": 0,
       "cacheRead": 4263,
@@ -99,14 +99,14 @@
     },
     {
       "file": "src/Plurals.tsx",
-      "latencyMs": 9749,
-      "totalTokens": 4607.25,
+      "latencyMs": 3845,
+      "totalTokens": 4610.25,
       "cacheCreated": 0,
       "cacheRead": 4263,
       "extracted": {
         "plurals.one_item": "1 item",
-        "plurals.n_items": "{count} items",
-        "plurals.new_messages": "You have {count} new messages",
+        "plurals.num_items": "{count} items",
+        "plurals.num_new_messages": "You have {count} new messages",
         "plurals.no_items_found": "No items found"
       },
       "correct": [
@@ -121,13 +121,19 @@
     },
     {
       "file": "src/Profile.tsx",
-      "latencyMs": 7684,
-      "totalTokens": 4569.25,
+      "latencyMs": 9093,
+      "totalTokens": 4671.5,
       "cacheCreated": 0,
       "cacheRead": 4263,
-      "extracted": {},
-      "correct": [],
-      "missed": [
+      "extracted": {
+        "profile.hello_name": "Hello {name}",
+        "profile.items_in_cart": "You have {itemCount} items in your cart",
+        "profile.search_orders": "Search orders",
+        "profile.get_help": "Get help",
+        "profile.help": "Help",
+        "profile.cart_empty": "Your cart is empty"
+      },
+      "correct": [
         "Hello {name}",
         "You have {itemCount} items in your cart",
         "Search orders",
@@ -135,27 +141,35 @@
         "Help",
         "Your cart is empty"
       ],
+      "missed": [],
       "falsePositives": [],
       "maybeCorrect": []
     },
     {
       "file": "src/TypedComponent.tsx",
-      "latencyMs": 8337,
-      "totalTokens": 4610.25,
+      "latencyMs": 8621,
+      "totalTokens": 4693.25,
       "cacheCreated": 0,
       "cacheRead": 4263,
-      "extracted": {},
-      "correct": [],
-      "missed": [
+      "extracted": {
+        "typed_component.card_content": "Card content",
+        "typed_component.my_item": "My Item",
+        "typed_component.a_detailed_description": "A detailed description"
+      },
+      "correct": [
         "Card content"
       ],
+      "missed": [],
       "falsePositives": [],
-      "maybeCorrect": []
+      "maybeCorrect": [
+        "My Item",
+        "A detailed description"
+      ]
     },
     {
       "file": "src/UrlsAndPaths.tsx",
-      "latencyMs": 4330,
-      "totalTokens": 4632.25,
+      "latencyMs": 5704,
+      "totalTokens": 4632.75,
       "cacheCreated": 0,
       "cacheRead": 4263,
       "extracted": {
@@ -174,7 +188,7 @@
     },
     {
       "file": "src/main.tsx",
-      "latencyMs": 4064,
+      "latencyMs": 3399,
       "totalTokens": 4504.75,
       "cacheCreated": 0,
       "cacheRead": 4263,
@@ -188,20 +202,20 @@
   "translation": [
     {
       "locale": "fr",
-      "latencyMs": 5500,
+      "latencyMs": 3119,
       "totalTokens": 0,
-      "keyCount": 19
+      "keyCount": 28
     }
   ],
   "totals": {
     "files": 10,
-    "latencyMs": 67976,
-    "totalTokens": 46138.5,
-    "extractedCount": 19,
-    "correctCount": 19,
-    "missedCount": 7,
+    "latencyMs": 55858,
+    "totalTokens": 46327.25,
+    "extractedCount": 28,
+    "correctCount": 26,
+    "missedCount": 0,
     "falsePositiveCount": 0,
-    "accuracy": 73.1,
+    "accuracy": 100,
     "estimatedCostUsd": 0
   }
 }
